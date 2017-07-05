@@ -1,0 +1,32 @@
+node ('openstack-jenkins-slave') {
+
+    stage('code-checkout') {
+        git branch:"develop", url:"https://github.com/UKCloud/openshift-heat.git"
+    }
+
+    stage('setup OpenStack credentials') {
+        sh "echo export OS_PASSWORD=`oc get secrets openstack --template='{{ .data.password }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export OS_USERNAME=`oc get secrets openstack --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
+        sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+        sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
+        sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
+    }
+
+    stage('cleanup HEAT environment') {
+        sh 'source ./openstack_rc.sh ; openstack stack show openshift_customer2 && openstack stack delete openshift_customer2 --wait --yes || echo stack not found'
+    }
+
+    stage('setup host keys') {
+        sh 'source ./openstack_rc.sh ; openstack keypair delete jenkins ; openstack keypair create jenkins | tee -a id_rsa_jenkins'
+        sh("chmod 600 id_rsa_jenkins")
+    }
+
+    stage('setup HEAT environment') {
+        sh("source ./openstack_rc.sh ; openstack stack create -f yaml -t openshift.yaml openshift_customer2 -e rhel_reg_creds.yaml --parameter key_name=jenkins --wait --parameter time=\"\$(date)\" --parameter domain_suffix=customer1.openshift.ukcloud.com --parameter os_auth_url=\$OS_AUTH_URL --parameter os_tenant_id=\$OS_TENANT_ID --parameter os_tenant_name=\$OS_TENANT_NAME --parameter os_region=\$OS_REGION_NAME --parameter openshift_openstack_username=\$OS_USERNAME --parameter openshift_openstack_password=\$OS_PASSWORD")
+    }
+
+    stage('Test HEAT deployment') {
+        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack floating ip list | grep 10.1.1.101 | awk '{print \$4}') ; ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@\$bastianHost 'uname -a'")
+    }
+}

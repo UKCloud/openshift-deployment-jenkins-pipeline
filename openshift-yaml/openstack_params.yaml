@@ -1,0 +1,7 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: openstack-config
+data: 
+  openstack_url: https://cor00005.cni.ukcloud.com:13000/v2.0
+  openstack_project_id: b6e9af26e40f48418a8594fdee3b64f6
