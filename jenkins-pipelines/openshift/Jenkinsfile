@@ -38,11 +38,11 @@ node ('openstack-jenkins-slave') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
     }
 
-//    stage('checkout openshift deployment code') {
-//        git branch:"master", url:"https://github.com/UKCloud/openshift-ansible.git"
-//    }
-//    stage('deploy openshift') {
-//        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack floating ip list | grep 10.1.1.101 | awk '{print \$4}') ; ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@\$bastianHost 'uname -a'")
-//    }
+    stage('checkout openshift deployment code') {
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'git clone https://github.com/UKCloud/openshift-ansible.git'")
+    }
+    stage('deploy openshift') {
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd openshift-ansible ; ./deploy-openshift.sh'")
+    }
 
 }
