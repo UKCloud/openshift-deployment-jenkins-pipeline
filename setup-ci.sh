@@ -8,7 +8,6 @@ SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-p
 SOURCE_REPOSITORY_REF='master'
 CONTEXT_DIR='jenkins-pipelines/openshift'
 
-
 function setup_openshift_deployment_jenkins_pipeline() {
 
     oc new-app -f openshift-yaml/template-openshift-build.yaml \
