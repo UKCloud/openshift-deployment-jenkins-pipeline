@@ -32,7 +32,7 @@ node ('openstack-jenkins-slave') {
         sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack stack output show openshift_customer2 bastion_ip -f value -c output_value)")
     }
 
-    def bastionip = readFile "env.vars"
+    def bastionip = readFile("env.vars").trim()
 
     stage('Test HEAT deployment') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
