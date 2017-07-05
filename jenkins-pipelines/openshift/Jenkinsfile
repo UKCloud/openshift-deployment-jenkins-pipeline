@@ -26,7 +26,23 @@ node ('openstack-jenkins-slave') {
         sh("source ./openstack_rc.sh ; openstack stack create -f yaml -t openshift.yaml openshift_customer2 -e rhel_reg_creds.yaml --parameter key_name=jenkins --wait --parameter time=\"\$(date)\" --parameter domain_suffix=customer1.openshift.ukcloud.com --parameter os_auth_url=\$OS_AUTH_URL --parameter os_tenant_id=\$OS_TENANT_ID --parameter os_tenant_name=\$OS_TENANT_NAME --parameter os_region=\$OS_REGION_NAME --parameter openshift_openstack_username=\$OS_USERNAME --parameter openshift_openstack_password=\$OS_PASSWORD")
     }
 
-    stage('Test HEAT deployment') {
-        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack floating ip list | grep 10.1.1.101 | awk '{print \$4}') ; ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@\$bastianHost 'uname -a'")
+    stage('Set variables HEAT deployment') {
+        sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.1.1.101 | awk '{print \$4}' > env.vars")
+
+        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack stack output show openshift_customer2 bastion_ip -f value -c output_value)")
     }
+
+    def bastion-ip = readFile "env.vars"
+
+    stage('Test HEAT deployment') {
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastion-ip 'uname -a'")
+    }
+
+//    stage('checkout openshift deployment code') {
+//        git branch:"master", url:"https://github.com/UKCloud/openshift-ansible.git"
+//    }
+//    stage('deploy openshift') {
+//        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack floating ip list | grep 10.1.1.101 | awk '{print \$4}') ; ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@\$bastianHost 'uname -a'")
+//    }
+
 }
