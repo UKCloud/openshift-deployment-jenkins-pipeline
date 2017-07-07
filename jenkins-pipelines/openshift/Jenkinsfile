@@ -11,6 +11,9 @@ node ('openstack-jenkins-slave') {
         sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
         sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
         sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
+        sh "echo export S3_ACCESS_KEY=`oc get secrets s3parameters --template='{{ .data.s3accesskey }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export S3_REGION_ENDPOINT=`oc get secrets s3parameters --template='{{ .data.s3regionendpoint }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -23,7 +26,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
-        sh("source ./openstack_rc.sh ; openstack stack create -f yaml -t openshift.yaml openshift_customer2 -e rhel_reg_creds.yaml --parameter key_name=jenkins --wait --parameter time=\"\$(date)\" --parameter domain_suffix=customer2.openshift.ukcloud.com --parameter os_auth_url=\$OS_AUTH_URL --parameter os_tenant_id=\$OS_TENANT_ID --parameter os_tenant_name=\$OS_TENANT_NAME --parameter os_region=\$OS_REGION_NAME --parameter openshift_openstack_username=\$OS_USERNAME --parameter openshift_openstack_password=\$OS_PASSWORD")
+        sh("source ./openstack_rc.sh ; openstack stack create -f yaml -t openshift.yaml openshift_customer2 -e rhel_reg_creds.yaml --parameter key_name=jenkins --wait --parameter time=\"\$(date)\" --parameter domain_suffix=customer2.openshift.ukcloud.com --parameter os_auth_url=\$OS_AUTH_URL --parameter os_tenant_id=\$OS_TENANT_ID --parameter os_tenant_name=\$OS_TENANT_NAME --parameter os_region=\$OS_REGION_NAME --parameter openshift_openstack_username=\$OS_USERNAME --parameter openshift_openstack_password=\$OS_PASSWORD --parameter s3_access_key=\$S3_ACCESS_KEY --parameter s3_secret_key=\$S3_SECRET_KEY --parameter s3_region_endpoint=\$S3_REGION_ENDPOINT")
     }
 
     stage('Set variables HEAT deployment') {
