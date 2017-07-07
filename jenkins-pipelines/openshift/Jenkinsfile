@@ -43,7 +43,12 @@ node ('openstack-jenkins-slave') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'git clone https://github.com/UKCloud/openshift-ansible.git'")
     }
+
     stage('deploy openshift') {
+        sh("echo 'openshift tests here'")
+    }
+
+    stage('validate openshift deployment') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd openshift-ansible ; ./deploy-openshift.sh'")
     }
 
