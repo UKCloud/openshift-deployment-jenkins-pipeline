@@ -26,7 +26,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
-        sh('echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: customer2.openshift.ukcloud.com\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  haproxy_floating_ip: 8de2f9db-1b20-4e5a-88ed-6e351cbd3c87" > environment.yaml')
+        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: customer2.openshift.ukcloud.com\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  haproxy_floating_ip: 8de2f9db-1b20-4e5a-88ed-6e351cbd3c87" > environment.yaml')
         sh('cat environment.yaml')
         sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
     }
