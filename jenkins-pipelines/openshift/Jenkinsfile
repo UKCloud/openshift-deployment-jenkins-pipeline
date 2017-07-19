@@ -17,7 +17,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('cleanup HEAT environment') {
-        sh 'source ./openstack_rc.sh ; openstack stack show openshift_customer2 && openstack stack delete openshift_customer2 --wait --yes || echo stack not found'
+        sh 'source ./openstack_rc.sh ; openstack stack show openshift && openstack stack delete openshift --wait --yes || echo stack not found'
     }
 
     stage('setup host keys') {
@@ -34,7 +34,7 @@ node ('openstack-jenkins-slave') {
     stage('Set variables HEAT deployment') {
         sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.1.1.101 | awk '{print \$4}' > env.vars")
 
-        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack stack output show openshift_customer2 bastion_ip -f value -c output_value)")
+        sh("source ./openstack_rc.sh ; export bastianHost=\$(openstack stack output show openshift bastion_ip -f value -c output_value)")
     }
 
     def bastionip = readFile("env.vars").trim()
