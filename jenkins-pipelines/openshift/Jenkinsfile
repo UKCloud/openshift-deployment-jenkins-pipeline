@@ -55,10 +55,10 @@ node ('openstack-jenkins-slave') {
 
     stage('validate openshift deployment') {
         sh('''response=$(curl -s -o /dev/null -w "%{http_code}\n" https://ocp.customer2.cor00005.cna.ukcloud.com:8443/healthz/ping --insecure)
-            if [ "$response" != "200" ]
-            then
-                exit 1
-            fi''')
+            if [ "$response" != "200" ]
+            then
+                exit 1
+            fi''')
     }
 
 }
