@@ -12,6 +12,8 @@ read s3secretkey
 echo 'Please enter the s3regionendpoint'
 read s3regionendpoint
 
+echo 'Please enter the s3bucketname'
+read s3bucketname
 
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
@@ -31,7 +33,7 @@ function setup_openstack_variables() {
     oc create -f openshift-yaml/openstack_params.yaml
     oc create secret generic openstack --from-literal=username=openshift@ukcloud.com --from-literal=password=$password
     oc create secret generic rhelsubscriptions --from-literal=rhel_org=6468465 --from-literal=rhel_activation_key=openshift
-    oc create secret generic s3parameters --from-literal=s3accesskey=$s3accesskey --from-literal=s3secretkey=$s3secretkey --from-literal=s3regionendpoint=$s3regionendpoint
+    oc create secret generic s3parameters --from-literal=s3accesskey=$s3accesskey --from-literal=s3secretkey=$s3secretkey --from-literal=s3regionendpoint=$s3regionendpoint --from-literal=s3bucketname=$s3bucketname
 }
 
 function configure_openshift_githooks() {
