@@ -54,11 +54,6 @@ node ('openstack-jenkins-slave') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd openshift-ansible ; ./deploy-openshift.sh'")
     }
 
-    stage('setup openshift client') {
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'scp -o StrictHostKeyChecking=no -i ~/id_rsa_jenkins master-0:/var/usrlocal/bin/oc ~/'")
-    }
-    
-
     stage('validate openshift deployment') {
         sh('''response=$(curl -s -o /dev/null -w "%{http_code}\n" https://ocp.customer2.cor00005.cna.ukcloud.com:8443/healthz/ping --insecure)
             if [ "$response" != "200" ]
@@ -69,7 +64,7 @@ node ('openstack-jenkins-slave') {
 
     stage('validate openshift user creation') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd openshift-ansible/tools/ ; ./create-user.sh testUser ghfRTgg543kjsbf687UFHVJBc654c'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip '~/oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p ghfRTgg543kjsbf687UFHVJBc654c'")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p ghfRTgg543kjsbf687UFHVJBc654c'")
     }
 
 }
