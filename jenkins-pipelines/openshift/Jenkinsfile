@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
     stage('code-checkout') {
-        git branch:"develop", url:"https://github.com/UKCloud/openshift-heat.git"
+        git branch:"feature/addMonitoring", url:"https://github.com/UKCloud/openshift-heat.git"
     }
 
     stage('setup OpenStack credentials') {
@@ -47,7 +47,7 @@ node ('openstack-jenkins-slave') {
     stage('checkout openshift deployment code') {
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'git clone https://github.com/UKCloud/openshift-ansible.git'")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'git clone -b feature/addMonitoring https://github.com/UKCloud/openshift-ansible.git'")
     }
 
     stage('deploy openshift') {
