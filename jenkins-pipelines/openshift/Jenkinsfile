@@ -47,8 +47,8 @@ node ('openstack-jenkins-slave') {
     stage('checkout openshift deployment code') {
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'git clone -b feature/addMonitoring https://github.com/UKCloud/openshift-deployment-ansible.git /usr/share/ansible/openshift-deployment-ansible'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'ln -s /etc/ansible/group_vars /usr/share/ansible/openshift-deployment-ansible/group_vars'")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'sudo git clone -b feature/addMonitoring https://github.com/UKCloud/openshift-deployment-ansible.git /usr/share/ansible/openshift-deployment-ansible'")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'sudo ln -s /etc/ansible/group_vars /usr/share/ansible/openshift-deployment-ansible/group_vars'")
     }
 
     stage('deploy openshift') {
