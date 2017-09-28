@@ -56,11 +56,8 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('validate openshift deployment') {
-        sh('''response=$(curl -s -o /dev/null -w "%{http_code}\n" https://ocp.customer2.cor00005.cna.ukcloud.com:8443/healthz/ping --insecure)
-            if [ "$response" != "200" ]
-            then
-                exit 1
-            fi''')
+        sh("git clone -b master https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
+        sh("ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" ")
     }
 
     stage('validate openshift user creation') {
