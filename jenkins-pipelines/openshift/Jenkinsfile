@@ -17,7 +17,7 @@ node ('openstack-jenkins-slave') {
         sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
-    stage('cleanup HEAT environment') {
+/*    stage('cleanup HEAT environment') {
         sh 'source ./openstack_rc.sh ; openstack stack show openshift && openstack stack delete openshift --wait --yes || echo stack not found'
     }
 
@@ -31,7 +31,7 @@ node ('openstack-jenkins-slave') {
         sh('cat environment.yaml')
         sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
     }
-
+*/
     stage('Set variables HEAT deployment') {
         sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.2.1.101 | awk '{print \$4}' > env.vars")
 
@@ -43,7 +43,7 @@ node ('openstack-jenkins-slave') {
     stage('Test HEAT deployment') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
     }
-
+/*
     stage('checkout openshift deployment code') {
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
@@ -54,7 +54,7 @@ node ('openstack-jenkins-slave') {
     stage('deploy openshift') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh'")
     }
-
+*/
     stage('validate openshift deployment') {
         sh("git clone -b feature/addTests https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
         sh("ansible-playbook ./openshift-deployment-ansible/tests/all.yml")
