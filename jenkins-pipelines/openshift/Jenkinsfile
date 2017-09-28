@@ -56,7 +56,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('validate openshift deployment') {
-        git branch:"feature/addTests", url:"https://github.com/UKCloud/openshift-deployment-ansible.git"
+        sh("git clone -b "feature/addTests" https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
         sh("ansible-playbook ./openshift-deployment-ansible/tests/all.yml")
     }
 
