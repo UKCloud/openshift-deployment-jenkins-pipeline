@@ -40,10 +40,11 @@ node ('openstack-jenkins-slave') {
 
     def bastionip = readFile("env.vars").trim()
 
+/*
     stage('Test HEAT deployment') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
     }
-/*
+
     stage('checkout openshift deployment code') {
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
