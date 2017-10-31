@@ -4,7 +4,7 @@ node ('openstack-jenkins-slave') {
     def openshiftDeploymentAnsibleBranch = 'master'
 
     stage('code-checkout') {
-        git branch:$openshiftHeatBranch, url:"https://github.com/UKCloud/openshift-heat.git"
+        git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
     }
 
     stage('setup OpenStack credentials') {
