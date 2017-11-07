@@ -45,9 +45,7 @@ node ('openstack-jenkins-slave') {
     def bastionip = readFile("env.vars").trim()
 
     stage('Test HEAT deployment') {
-        sh("echo BASTION IP 1 = ${bastionip}")
-        error("Forcing the pipeline to stop")
-
+        sh("echo BASTION IP = ${bastionip}")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
     }
 
