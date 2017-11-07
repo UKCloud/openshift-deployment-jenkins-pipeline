@@ -39,10 +39,11 @@ node ('openstack-jenkins-slave') {
         sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.2.1.101 | awk '{print \$4}' > env.vars")
 
         /* TODO: bastionHost isn't used, but does the same as the line above (but better). Fix!! */
-        sh("source ./openstack_rc.sh ; export bastionHost=\$(openstack stack output show openshift bastion_ip -f value -c output_value)")
+        sh("source ./openstack_rc.sh ; export bastionHost=\$(openstack stack output show openshift bastion_ip -f value -c output_value) > env2.vars")
     }
 
     def bastionip = readFile("env.vars").trim()
+    def bastionHost = readFile("env2.vars").trim()
 
     stage('Test HEAT deployment') {
         sh("echo BASTION IP 1 = ${bastionip}")
