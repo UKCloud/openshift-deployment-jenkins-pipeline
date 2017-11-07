@@ -36,18 +36,16 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('Set variables HEAT deployment') {
-        sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.2.1.101 | awk '{print \$4}' > env.vars")
-
-        /* TODO: bastionHost isn't used, but does the same as the line above (but better). Fix!! */
-        sh("source ./openstack_rc.sh ; export bastionHost=\$(openstack stack output show openshift bastion_ip -f value -c output_value) > env2.vars")
+        sh("""
+            source ./openstack_rc.sh;
+            openstack stack output show openshift bastion_ip -f value -c output_value > env.vars
+        """)
     }
 
     def bastionip = readFile("env.vars").trim()
-    def bastionHost = readFile("env2.vars").trim()
 
     stage('Test HEAT deployment') {
         sh("echo BASTION IP 1 = ${bastionip}")
-        sh("echo BASTION IP 2 = ${bastionHost}")
         error("Forcing the pipeline to stop")
 
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
