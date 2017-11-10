@@ -62,7 +62,7 @@ node ('openstack-jenkins-slave') {
 
     stage('validate openshift deployment') {
         sh("git clone -b $openshiftDeploymentAnsibleBranch https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
-        sh("ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" ")
+        sh("ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OS_PASSWORD=`oc get secrets openstack --template='{{ .data.password }}' | base64 --decode` | tee -a ")
     }
 
     stage('validate openshift user creation') {
