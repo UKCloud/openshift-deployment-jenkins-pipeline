@@ -21,21 +21,21 @@ node ('openstack-jenkins-slave') {
         sh "echo export USER_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export USER_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
-//
-//    stage('cleanup HEAT environment') {
-//        sh 'source ./openstack_rc.sh ; openstack stack show openshift && openstack stack delete openshift --wait --yes || echo stack not found'
-//    }
-//
+
+    stage('cleanup HEAT environment') {
+        sh 'source ./openstack_rc.sh ; openstack stack show openshift && openstack stack delete openshift --wait --yes || echo stack not found'
+    }
+
     stage('setup host keys') {
         sh 'source ./openstack_rc.sh ; openstack keypair delete jenkins ; openstack keypair create jenkins | tee -a id_rsa_jenkins'
         sh("chmod 600 id_rsa_jenkins")
     }
-//
-//    stage('setup HEAT environment') {
-//        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: customer2.cor00005.cna.ukcloud.com\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  haproxy_floating_ip: 8de2f9db-1b20-4e5a-88ed-6e351cbd3c87" > environment.yaml')
-//        sh('cat environment.yaml')
-//        sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
-//    }
+
+    stage('setup HEAT environment') {
+        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: customer2.cor00005.cna.ukcloud.com\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  haproxy_floating_ip: 8de2f9db-1b20-4e5a-88ed-6e351cbd3c87" > environment.yaml')
+        sh('cat environment.yaml')
+        sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
+    }
 
     stage('Set variables HEAT deployment') {
         sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.2.1.101 | awk '{print \$4}' > env.vars")
@@ -43,25 +43,25 @@ node ('openstack-jenkins-slave') {
         /* TODO: bastionHost isn't used, but does the same as the line above (but better). Fix!! */
         sh("source ./openstack_rc.sh ; export bastionHost=\$(openstack stack output show openshift bastion_ip -f value -c output_value)")
     }
-//
+
     def bastionip = readFile("env.vars").trim()
 
-//    stage('Test HEAT deployment') {
-//        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
-//    }
-//
-//    stage('checkout openshift deployment code') {
-//		/* openshift-deplyment-ansible is cloned on the Bastion Host via HEAT, so we don't need to clone it here */
-//        sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
-//        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
-//        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git checkout $openshiftDeploymentAnsibleBranch'")
-//
-//    }
-//
-//    stage('deploy openshift') {
-//        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh'")
-//    }
-//
+    stage('Test HEAT deployment') {
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
+    }
+
+    stage('checkout openshift deployment code') {
+		/* openshift-deplyment-ansible is cloned on the Bastion Host via HEAT, so we don't need to clone it here */
+        sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git checkout $openshiftDeploymentAnsibleBranch'")
+
+    }
+
+    stage('deploy openshift') {
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh'")
+    }
+
     stage('validate openshift deployment') {
         sh("git clone -b $openshiftDeploymentAnsibleBranch https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
         sh("for var in \$(export | grep KUB | awk '{ print \$2 }' | sed 's/\\=.*//g'); do unset \$var; done; source ./openstack_rc.sh ; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OS_PASSWORD=\"\$USER_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
