@@ -18,8 +18,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export S3_REGION_ENDPOINT=`oc get secrets s3parameters --template='{{ .data.s3regionendpoint }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export USER_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export USER_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export OPENSHIFT_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export OPENSHIFT_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -64,7 +64,7 @@ node ('openstack-jenkins-slave') {
 
     stage('validate openshift deployment') {
         sh("git clone -b $openshiftDeploymentAnsibleBranch https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
-        sh("for var in \$(export | grep KUB | awk '{ print \$2 }' | sed 's/\\=.*//g'); do unset \$var; done; source ./openstack_rc.sh ; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars USER_USERNAME=\"\$USER_USERNAME\" --extra-vars USER_PASSWORD=\"\$USER_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
+        sh("for var in \$(export | grep KUB | awk '{ print \$2 }' | sed 's/\\=.*//g'); do unset \$var; done; source ./openstack_rc.sh ; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
 
     stage('validate openshift user creation') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser ghfRTgg543kjsbf687UFHVJBc654c'")
