@@ -21,6 +21,12 @@ read openshiftusername
 echo 'Please enter the users password'
 read openshiftpassword
 
+echo 'Please enter the Red Hat Registration Org'
+read rhorg
+
+echo 'Please enter the Red Hat Registration activation key'
+read rhactivationkey
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -38,7 +44,7 @@ function setup_openshift_deployment_jenkins_pipeline() {
 function setup_openstack_variables() {
     oc create -f openshift-yaml/openstack_params.yaml
     oc create secret generic openstack --from-literal=username=openshift@ukcloud.com --from-literal=password=$password
-    oc create secret generic rhelsubscriptions --from-literal=rhel_org=6468465 --from-literal=rhel_activation_key=openshift
+    oc create secret generic rhelsubscriptions --from-literal=rhel_org=$rhorg --from-literal=rhel_activation_key=$rhactivationkey
     oc create secret generic s3parameters --from-literal=s3accesskey=$s3accesskey --from-literal=s3secretkey=$s3secretkey --from-literal=s3regionendpoint=$s3regionendpoint --from-literal=s3bucketname=$s3bucketname
     oc create secret generic openshift --from-literal=OPENSHIFT_USERNAME=$openshiftusername --from-literal=OPENSHIFT_PASSWORD=$openshiftpassword
 }

@@ -38,20 +38,21 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('Set variables HEAT deployment') {
-        sh("source ./openstack_rc.sh ; openstack floating ip list | grep 10.2.1.101 | awk '{print \$4}' > env.vars")
-
-        /* TODO: bastionHost isn't used, but does the same as the line above (but better). Fix!! */
-        sh("source ./openstack_rc.sh ; export bastionHost=\$(openstack stack output show openshift bastion_ip -f value -c output_value)")
+        sh("""
+            source ./openstack_rc.sh;
+            openstack stack output show openshift bastion_ip -f value -c output_value > env.vars
+        """)
     }
 
     def bastionip = readFile("env.vars").trim()
 
     stage('Test HEAT deployment') {
+        sh("echo BASTION IP = ${bastionip}")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
     }
 
     stage('checkout openshift deployment code') {
-		/* openshift-deplyment-ansible is cloned on the Bastion Host via HEAT, so we don't need to clone it here */
+        /* openshift-deplyment-ansible is cloned on the Bastion Host via HEAT, so we don't need to clone it here */
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git checkout $openshiftDeploymentAnsibleBranch'")
