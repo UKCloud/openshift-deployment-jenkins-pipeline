@@ -18,7 +18,7 @@ read s3bucketname
 echo 'Please enter the users login name'
 read openshiftusername
 
-echo 'Please enter the users passowrd'
+echo 'Please enter the users password'
 read openshiftpassword
 
 NAME='openshift-build-pipeline'
