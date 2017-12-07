@@ -18,8 +18,6 @@ node ('openstack-jenkins-slave') {
         sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export S3_REGION_ENDPOINT=`oc get secrets s3parameters --template='{{ .data.s3regionendpoint }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OPENSHIFT_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OPENSHIFT_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -63,15 +61,22 @@ node ('openstack-jenkins-slave') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh'")
     }
 
-    /* The environment variables set by the pipeline need to be overwritten. The kubernetes of the pipeline automatically override the target host, so therefore need to unset them so you can deploy pods within the correct environment.
-    */
     stage('validate openshift deployment') {
         sh("git clone -b $openshiftDeploymentAnsibleBranch https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
-        sh("for var in \$(export | grep KUB | awk '{ print \$2 }' | sed 's/\\=.*//g'); do unset \$var; done; source ./openstack_rc.sh ; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
+        sh("ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" ")
+    }
 
     stage('validate openshift user creation') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser ghfRTgg543kjsbf687UFHVJBc654c'")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p ghfRTgg543kjsbf687UFHVJBc654c'")
+    }
+
+    stage('Upscale - create new nodes') {
+        sh("echo This is where you upscale. Go to the Heat repo and run upscale.sh")
+    }
+
+    stage('Upscale - add nodes') {
+        sh("echo This is where you upscale. ssh to the Bastion and run upscale.sh there")
     }
 
 }
