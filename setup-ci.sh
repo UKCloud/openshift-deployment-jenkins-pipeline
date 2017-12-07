@@ -15,6 +15,12 @@ read s3regionendpoint
 echo 'Please enter the s3bucketname'
 read s3bucketname
 
+echo 'Please enter the users login name'
+read openshiftusername
+
+echo 'Please enter the users password'
+read openshiftpassword
+
 echo 'Please enter the Red Hat Registration Org'
 read rhorg
 
@@ -40,6 +46,7 @@ function setup_openstack_variables() {
     oc create secret generic openstack --from-literal=username=openshift@ukcloud.com --from-literal=password=$password
     oc create secret generic rhelsubscriptions --from-literal=rhel_org=$rhorg --from-literal=rhel_activation_key=$rhactivationkey
     oc create secret generic s3parameters --from-literal=s3accesskey=$s3accesskey --from-literal=s3secretkey=$s3secretkey --from-literal=s3regionendpoint=$s3regionendpoint --from-literal=s3bucketname=$s3bucketname
+    oc create secret generic openshift --from-literal=OPENSHIFT_USERNAME=$openshiftusername --from-literal=OPENSHIFT_PASSWORD=$openshiftpassword
 }
 
 function configure_openshift_githooks() {
