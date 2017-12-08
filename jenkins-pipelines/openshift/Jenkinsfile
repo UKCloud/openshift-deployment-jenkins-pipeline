@@ -65,36 +65,56 @@ node ('openstack-jenkins-slave') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh'")
     }
 
-    stage('DEBUG post deployment') {
+    /*
+        deploy-openshift changes the passwords for $OPENSHIFT_USERNAME, so we
+        need to grab the new password before we can attempt to log in.
+    */
+    stage('Collect the new passwords') {
         sh """
-           source ./openstack_rc.sh;
-           ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip cat /home/cloud-user/passwords.txt;
-           env;
-           echo \$OPENSHIFT_USERNAME;
-           echo \$OPENSHIFT_PASSWORD;
+           ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip cat /home/cloud-user/passwords.txt > new_passwords.txt;
         """
-        sh "echo \$SHELL"
     }
     /*
         The environment variables set by the pipeline need to be overwritten.
         The kubernetes parts of the pipeline automatically override the target
         host, so therefore need to unset them so you can deploy pods within
         the correct environment.
+
+        Obtain the new password to pass on to the tests/all.yml playbook.
     */
     stage('validate openshift deployment') {
-        sh("git clone -b $openshiftDeploymentAnsibleBranch https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
-        sh("for var in \$(env | grep KUB | cut -d= -f1); do unset \$var; done; source ./openstack_rc.sh; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
+        sh("""
+            git clone -b $openshiftDeploymentAnsibleBranch \
+                https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
 
+            NEW_PASSWORD=\$(grep \$OPENSHIFT_USERNAME new_passwords.txt | cut -d' ' -f2)
+
+            for var in \$(env | grep KUB | cut -d= -f1); do
+                unset \$var;
+            done;
+            source ./openstack_rc.sh;
+            ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
+                --extra-vars \"hostIP=$bastionip\" \
+                --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
+                --extra-vars OPENSHIFT_PASSWORD=\"\$NEW_PASSWORD\" \
+                --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"
+        """)
+    }
+
+    /*
+        Test user creation works (using a randomly-generated password)
+    */
     stage('validate openshift user creation') {
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser ghfRTgg543kjsbf687UFHVJBc654c'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p ghfRTgg543kjsbf687UFHVJBc654c'")
+        sh("""
+            RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
 
-        /* reset the password to something random */
-        sh """
-            new_password=\$(openssl rand -base64 20 | cut -d= -f1);
-            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$new_password'")
+            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
+                'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD'
 
-        """
+            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
+                'oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD'
+        """)
+
 
     }
 
