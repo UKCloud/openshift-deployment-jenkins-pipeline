@@ -70,9 +70,10 @@ node ('openstack-jenkins-slave') {
            source ./openstack_rc.sh;
            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip cat /home/cloud-user/passwords.txt;
            env;
-           echo $OPENSHIFT_USERNAME;
-           echo $OPENSHIFT_PASSWORD;
+           echo \$OPENSHIFT_USERNAME;
+           echo \$OPENSHIFT_PASSWORD;
         """
+        sh "echo \$SHELL"
     }
     /*
         The environment variables set by the pipeline need to be overwritten.
