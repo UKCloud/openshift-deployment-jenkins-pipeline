@@ -64,7 +64,6 @@ node ('openstack-jenkins-slave') {
 
     stage('DEBUG post deployment') {
         sh """#!/bin/bash
-           echo $SHELL;
            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip cat /home/cloud-user/passwords.txt;
            env;
            echo $OPENSHIFT_USERNAME;
