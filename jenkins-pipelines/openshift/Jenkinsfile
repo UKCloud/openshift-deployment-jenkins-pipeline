@@ -52,7 +52,10 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('checkout openshift deployment code') {
-        /* openshift-deplyment-ansible is cloned on the Bastion Host via HEAT, so we don't need to clone it here */
+        /*
+           openshift-deplyment-ansible is cloned on the Bastion Host via
+           HEAT, so we don't need to clone it here
+        */
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git checkout $openshiftDeploymentAnsibleBranch'")
@@ -63,7 +66,8 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('DEBUG post deployment') {
-        sh """#!/bin/bash
+        sh """
+           source ./openstack_rc.sh;
            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip cat /home/cloud-user/passwords.txt;
            env;
            echo $OPENSHIFT_USERNAME;
@@ -78,11 +82,19 @@ node ('openstack-jenkins-slave') {
     */
     stage('validate openshift deployment') {
         sh("git clone -b $openshiftDeploymentAnsibleBranch https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible")
-        sh("for var in \$(export | grep KUB | awk '{ print \$2 }' | sed 's/\\=.*//g'); do unset \$var; done; source ./openstack_rc.sh ; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
+        sh("for var in \$(env | grep KUB | cut -d= -f1); do unset \$var; done; source ./openstack_rc.sh; ansible-playbook ./openshift-deployment-ansible/tests/all.yml --extra-vars \"hostIP=$bastionip\" --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"") }
 
     stage('validate openshift user creation') {
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser ghfRTgg543kjsbf687UFHVJBc654c'")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p ghfRTgg543kjsbf687UFHVJBc654c'")
+
+        /* reset the password to something random */
+        sh """
+            new_password=\$(openssl rand -base64 20 | cut -d= -f1);
+            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$new_password'")
+
+        """
+
     }
 
 }
