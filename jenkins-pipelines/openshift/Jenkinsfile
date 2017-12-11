@@ -71,7 +71,7 @@ node ('openstack-jenkins-slave') {
     */
     stage('Collect the new passwords') {
         sh """
-           ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip cat /home/cloud-user/passwords.txt > new_passwords.txt;
+           scp -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip:/home/cloud-user/passwords.txt ./new_passwords.txt;
         """
     }
     /*
