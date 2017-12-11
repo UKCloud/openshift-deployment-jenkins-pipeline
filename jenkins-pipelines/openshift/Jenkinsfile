@@ -84,6 +84,9 @@ node ('openstack-jenkins-slave') {
     */
     stage('validate openshift deployment') {
         sh("""
+            source ./openstack_rc.sh;
+            cat new_passwords.txt
+
             git clone -b $openshiftDeploymentAnsibleBranch \
                 https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
 
@@ -92,7 +95,7 @@ node ('openstack-jenkins-slave') {
             for var in \$(env | grep KUB | cut -d= -f1); do
                 unset \$var;
             done;
-            source ./openstack_rc.sh;
+
             ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
                 --extra-vars \"hostIP=$bastionip\" \
                 --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
