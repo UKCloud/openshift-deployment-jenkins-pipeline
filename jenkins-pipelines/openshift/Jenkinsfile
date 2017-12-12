@@ -1,6 +1,6 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'master'
+    def openshiftHeatBranch = 'bugfix/friday-code-tidy-ocd'
     def openshiftDeploymentAnsibleBranch = 'feature/make-new-app-tests-work-again'
 
     stage('code-checkout') {
@@ -112,10 +112,10 @@ node ('openstack-jenkins-slave') {
             RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
 
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                'cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD'
+                "cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD"
 
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                'oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD'
+                "oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
         """)
 
 
