@@ -1,6 +1,6 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'bugfix/friday-code-tidy-ocd'
+    def openshiftHeatBranch = 'master'
     def openshiftDeploymentAnsibleBranch = 'feature/make-new-app-tests-work-again'
 
     stage('code-checkout') {
