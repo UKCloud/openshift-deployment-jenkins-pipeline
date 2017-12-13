@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
     def openshiftHeatBranch = 'master'
-    def openshiftDeploymentAnsibleBranch = 'feature/make-new-app-tests-work-again'
+    def openshiftDeploymentAnsibleBranch = 'master'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
