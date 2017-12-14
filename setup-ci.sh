@@ -15,11 +15,17 @@ read s3regionendpoint
 echo 'Please enter the s3bucketname'
 read s3bucketname
 
-echo 'Please enter the users login name'
+echo "Please enter the user's login name (e.g. 'admin')"
 read openshiftusername
 
-echo 'Please enter the users password'
+echo "Please enter the user's password"
 read openshiftpassword
+
+echo "Please enter the Openshift domain suffix"
+read domainsuffix
+
+echo "Please enter the UUID of the HAProxy Floating IP Address"
+read haproxy_floating_ip
 
 echo 'Please enter the Red Hat Registration Org'
 read rhorg
@@ -43,10 +49,26 @@ function setup_openshift_deployment_jenkins_pipeline() {
 
 function setup_openstack_variables() {
     oc create -f openshift-yaml/openstack_params.yaml
-    oc create secret generic openstack --from-literal=username=openshift@ukcloud.com --from-literal=password=$password
-    oc create secret generic rhelsubscriptions --from-literal=rhel_org=$rhorg --from-literal=rhel_activation_key=$rhactivationkey
-    oc create secret generic s3parameters --from-literal=s3accesskey=$s3accesskey --from-literal=s3secretkey=$s3secretkey --from-literal=s3regionendpoint=$s3regionendpoint --from-literal=s3bucketname=$s3bucketname
-    oc create secret generic openshift --from-literal=OPENSHIFT_USERNAME=$openshiftusername --from-literal=OPENSHIFT_PASSWORD=$openshiftpassword
+
+    oc create secret generic openstack \
+        --from-literal=username=openshift@ukcloud.com \
+        --from-literal=password=$password
+
+    oc create secret generic rhelsubscriptions \
+        --from-literal=rhel_org=$rhorg \
+        --from-literal=rhel_activation_key=$rhactivationkey
+
+    oc create secret generic s3parameters \
+        --from-literal=s3accesskey=$s3accesskey \
+        --from-literal=s3secretkey=$s3secretkey \
+        --from-literal=s3regionendpoint=$s3regionendpoint \
+        --from-literal=s3bucketname=$s3bucketname
+
+    oc create secret generic openshift \
+        --from-literal=username=$openshiftusername \
+        --from-literal=userpass=$openshiftpassword \
+        --from-literal=domainsuffix=$domainsuffix \
+        --from-literal=haproxy_floating_ip=$haproxy_floating_ip
 }
 
 function configure_openshift_githooks() {

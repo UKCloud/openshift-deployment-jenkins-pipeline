@@ -20,6 +20,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export OPENSHIFT_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export OPENSHIFT_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.domainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export HAPROXY_FLOATING_IP=`oc get secrets openshift --template='{{ .data.haproxy_floating_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -32,7 +34,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
-        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: customer2.cor00005.cna.ukcloud.com\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  haproxy_floating_ip: 8de2f9db-1b20-4e5a-88ed-6e351cbd3c87" > environment.yaml')
+        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  haproxy_floating_ip: \$HAPROXY_FLOATING_IP" > environment.yaml')
         sh('cat environment.yaml')
         sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
     }
@@ -62,35 +64,23 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('deploy openshift') {
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh'")
+        sh("""
+            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \$OPENSHIFT_PASSWORD"
+        """)
     }
 
-    /*
-        deploy-openshift changes the passwords for $OPENSHIFT_USERNAME, so we
-        need to grab the new password before we can attempt to log in.
-    */
-    stage('Collect the new passwords') {
-        sh """
-           scp -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip:/home/cloud-user/passwords.txt ./new_passwords.txt;
-        """
-    }
     /*
         The environment variables set by the pipeline need to be overwritten.
         The kubernetes parts of the pipeline automatically override the target
         host, so therefore need to unset them so you can deploy pods within
         the correct environment.
 
-        Obtain the new password to pass on to the tests/all.yml playbook.
     */
     stage('validate openshift deployment') {
         sh("""
             source ./openstack_rc.sh;
-            cat new_passwords.txt
-
             git clone -b $openshiftDeploymentAnsibleBranch \
                 https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
-
-            NEW_PASSWORD=\$(grep \$OPENSHIFT_USERNAME new_passwords.txt | cut -d' ' -f2)
 
             for var in \$(env | grep KUB | cut -d= -f1); do
                 unset \$var;
@@ -99,8 +89,8 @@ node ('openstack-jenkins-slave') {
             ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
                 --extra-vars \"hostIP=$bastionip\" \
                 --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
-                --extra-vars OPENSHIFT_PASSWORD=\"\$NEW_PASSWORD\" \
-                --extra-vars server=\"https://ocp.customer2.cor00005.cna.ukcloud.com:8443\"
+                --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
+                --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
         """)
     }
 
@@ -115,7 +105,7 @@ node ('openstack-jenkins-slave') {
                 "cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD"
 
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                "oc login https://ocp.customer2.cor00005.cna.ukcloud.com:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
+                "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
         """)
 
 
