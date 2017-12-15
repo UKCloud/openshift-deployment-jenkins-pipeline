@@ -65,6 +65,7 @@ node ('openstack-jenkins-slave') {
 
     stage('deploy openshift') {
         sh("""
+            source ./openstack_rc.sh;
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \$OPENSHIFT_PASSWORD"
         """)
     }
@@ -74,7 +75,6 @@ node ('openstack-jenkins-slave') {
         The kubernetes parts of the pipeline automatically override the target
         host, so therefore need to unset them so you can deploy pods within
         the correct environment.
-
     */
     stage('validate openshift deployment') {
         sh("""
@@ -107,8 +107,5 @@ node ('openstack-jenkins-slave') {
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
                 "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
         """)
-
-
     }
-
 }
