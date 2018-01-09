@@ -100,6 +100,7 @@ node ('openstack-jenkins-slave') {
     */
     stage('validate openshift user creation') {
         sh("""
+            source ./openstack_rc.sh;
             RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
 
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
