@@ -20,6 +20,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export OPENSHIFT_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export OPENSHIFT_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export ADMIN_USERNAME=`oc get secrets openshift --template='{{ .data.adminuser }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export ADMIN_PASSWORD=`oc get secrets openshift --template='{{ .data.adminpass }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.domainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export HAPROXY_FLOATING_IP=`oc get secrets openshift --template='{{ .data.haproxy_floating_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
@@ -66,7 +68,7 @@ node ('openstack-jenkins-slave') {
     stage('deploy openshift') {
         sh("""
             source ./openstack_rc.sh;
-            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \$OPENSHIFT_PASSWORD"
+            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\" \"\$OPENSHIFT_USERNAME\" \"\$OPENSHIFT_PASSWORD\""
         """)
     }
 
@@ -87,7 +89,6 @@ node ('openstack-jenkins-slave') {
             done;
 
             ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
-                --extra-vars \"hostIP=$bastionip\" \
                 --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                 --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                 --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
@@ -99,6 +100,7 @@ node ('openstack-jenkins-slave') {
     */
     stage('validate openshift user creation') {
         sh("""
+            source ./openstack_rc.sh;
             RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
 
             ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \

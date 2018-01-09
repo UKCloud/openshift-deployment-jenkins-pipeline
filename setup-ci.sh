@@ -15,11 +15,14 @@ read s3regionendpoint
 echo 'Please enter the s3bucketname'
 read s3bucketname
 
-echo "Please enter the user's login name (e.g. 'admin')"
-read openshiftusername
+openshiftadminuser="admin"
+openshiftdemouser="demo"
 
-echo "Please enter the user's password"
-read openshiftpassword
+echo "Please enter the 'admin' user's password"
+read openshiftadminpass
+
+echo "Please enter the 'demo' user's password"
+read openshiftdemopass
 
 echo "Please enter the Openshift domain suffix"
 read domainsuffix
@@ -64,11 +67,15 @@ function setup_openstack_variables() {
         --from-literal=s3regionendpoint=$s3regionendpoint \
         --from-literal=s3bucketname=$s3bucketname
 
+    # Admin is adminuser/adminpass. 'demo' is username/userpass
     oc create secret generic openshift \
-        --from-literal=username=$openshiftusername \
-        --from-literal=userpass=$openshiftpassword \
+        --from-literal=adminuser=$openshiftadminuser \
+        --from-literal=username=$openshiftdemouser \
+        --from-literal=adminpass=$openshiftadminpass \
+        --from-literal=userpass=$openshiftdemopass \
         --from-literal=domainsuffix=$domainsuffix \
         --from-literal=haproxy_floating_ip=$haproxy_floating_ip
+
 }
 
 function configure_openshift_githooks() {
