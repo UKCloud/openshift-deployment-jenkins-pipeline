@@ -13,6 +13,7 @@ node ('openstack-jenkins-slave') {
         sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
         sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
         sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
+        sh "echo export OS_TENANT_NAME=`oc get configmap openstack-config --template='{{ .data.openstack_project_name }}'` | tee -a openstack_rc.sh"
         sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
         sh "echo export S3_ACCESS_KEY=`oc get secrets s3parameters --template='{{ .data.s3accesskey }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
