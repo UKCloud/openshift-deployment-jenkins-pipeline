@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'removeMonitoringDeploymentCode'
-    def openshiftDeploymentAnsibleBranch = 'removeMonitoringDeploymentCode'
+    def openshiftHeatBranch = 'master'
+    def openshiftDeploymentAnsibleBranch = 'master'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
