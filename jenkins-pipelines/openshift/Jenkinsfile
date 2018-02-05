@@ -93,7 +93,7 @@ node ('openstack-jenkins-slave') {
                 --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                 --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                 --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
-	    /tests/haproxy/master-failover-test.sh
+	    tests/haproxy/master-failover-test.sh
         """)
     }
 
