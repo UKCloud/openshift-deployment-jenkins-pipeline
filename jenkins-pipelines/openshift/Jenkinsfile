@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'feature/addLogging'
-    def openshiftDeploymentAnsibleBranch = 'feature/addLogging'
+    def openshiftHeatBranch = 'master'
+    def openshiftDeploymentAnsibleBranch = 'bugfix/haproxy_timeout_changes'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
@@ -93,7 +93,7 @@ node ('openstack-jenkins-slave') {
                 --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                 --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                 --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
-	    #./openshift-deployment-ansible/tests/haproxy/master-failover-test.sh
+	    ./openshift-deployment-ansible/tests/haproxy/master-failover-test.sh
         """)
     }
 
