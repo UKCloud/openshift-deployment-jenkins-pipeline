@@ -1,6 +1,6 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'master'
+    def openshiftHeatBranch = 'bugfix/bastion_memory_increase'
     def openshiftDeploymentAnsibleBranch = 'bugfix/haproxy_timeout_changes'
 
     stage('code-checkout') {
