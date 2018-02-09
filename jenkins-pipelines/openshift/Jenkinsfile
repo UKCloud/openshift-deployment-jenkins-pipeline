@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'master'
-    def openshiftDeploymentAnsibleBranch = 'master'
+    def openshiftHeatBranch = 'bugfix/bastion_memory_increase'
+    def openshiftDeploymentAnsibleBranch = 'bugfix/haproxy_timeout_changes'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
