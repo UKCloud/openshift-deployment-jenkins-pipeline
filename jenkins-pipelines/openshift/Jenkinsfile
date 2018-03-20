@@ -93,6 +93,8 @@ node ('openstack-jenkins-slave') {
                 --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                 --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                 --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
+	    ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
+	    "/usr/share/ansible/openshift-deployment-ansible/tests/haproxy/master-failover-test.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\""
         """)
     }
 
