@@ -40,7 +40,7 @@ node ('openstack-jenkins-slave') {
     stage('setup HEAT environment') {
         sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  control_plane_ip: \$CONTROL_PLANE_IP"\n  data_plane_ip: \$DATA_PLANE_IP" > environment.yaml')
         sh('cat environment.yaml')
-        sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
+        sh("source ./openstack_rc.sh ; ./deploy.sh false \$OS_PASSWORD")
     }
 
     stage('Set variables HEAT deployment') {
