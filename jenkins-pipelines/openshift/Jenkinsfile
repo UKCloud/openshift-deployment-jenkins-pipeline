@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
     def openshiftHeatBranch = 'feature/provideMultiFlavourScale'
-    def openshiftDeploymentAnsibleBranch = 'feature/provideMultiFlavourScale'
+    def openshiftDeploymentAnsibleBranch = 'master'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
