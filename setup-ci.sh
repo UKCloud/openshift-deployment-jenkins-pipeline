@@ -27,8 +27,11 @@ read openshiftdemopass
 echo "Please enter the Openshift domain suffix"
 read domainsuffix
 
-echo "Please enter the UUID of the HAProxy Floating IP Address"
-read haproxy_floating_ip
+echo "Please enter the UUID of the Data Plane Floating IP Address"
+read dataplane_floating_ip
+
+echo "Please enter the UUID of the Control Plane Floating IP Address"
+read controlplane_floating_ip
 
 echo 'Please enter the Red Hat Registration Org'
 read rhorg
@@ -74,7 +77,8 @@ function setup_openstack_variables() {
         --from-literal=adminpass=$openshiftadminpass \
         --from-literal=userpass=$openshiftdemopass \
         --from-literal=domainsuffix=$domainsuffix \
-        --from-literal=haproxy_floating_ip=$haproxy_floating_ip
+        --from-literal=data_plane_ip=$dataplane_floating_ip
+        --from-literal=control_plane_ip=$controlplane_floating_ip
 
 }
 
