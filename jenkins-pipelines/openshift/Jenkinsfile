@@ -1,6 +1,6 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'feature/provideMultiFlavourScale'
+    def openshiftHeatBranch = 'master'
     def openshiftDeploymentAnsibleBranch = 'master'
 
     stage('code-checkout') {
