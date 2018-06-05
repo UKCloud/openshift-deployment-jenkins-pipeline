@@ -12,6 +12,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export OS_USERNAME=`oc get secrets openstack --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
         sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+        sh "echo -e \"  satellite_fqdn: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_fqdn }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+        sh "echo -e \"  satellite_deploy: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_deploy }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
         sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
         sh "echo export OS_TENANT_NAME=`oc get configmap openstack-config --template='{{ .data.openstack_project_name }}'` | tee -a openstack_rc.sh"
         sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"

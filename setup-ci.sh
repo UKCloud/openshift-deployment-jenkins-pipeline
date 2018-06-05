@@ -39,6 +39,12 @@ read rhorg
 echo 'Please enter the Red Hat Registration activation key'
 read rhactivationkey
 
+echo 'Please enter the address of the satellite server to install from'
+read satelliteaddress
+
+echo 'Deploy from Satellite? True/False'
+read usesatellite
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -62,7 +68,9 @@ function setup_openstack_variables() {
 
     oc create secret generic rhelsubscriptions \
         --from-literal=rhel_org=$rhorg \
-        --from-literal=rhel_activation_key=$rhactivationkey
+        --from-literal=rhel_activation_key=$rhactivationkey \
+        --from-literal=satellite_fqdn=$satelliteaddress \
+        --from-literal=satellite_deploy=$usesatellite
 
     oc create secret generic s3parameters \
         --from-literal=s3accesskey=$s3accesskey \
