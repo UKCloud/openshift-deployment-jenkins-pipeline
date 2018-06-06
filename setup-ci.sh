@@ -45,6 +45,9 @@ read satelliteaddress
 echo 'Deploy from Satellite? True/False'
 read usesatellite
 
+echo 'Version of OpenShift to deploy'
+read ocp_version
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -87,6 +90,7 @@ function setup_openstack_variables() {
         --from-literal=domainsuffix=$domainsuffix \
         --from-literal=data_plane_ip=$dataplane_floating_ip
         --from-literal=control_plane_ip=$controlplane_floating_ip
+        --from-literal=openshift_version=$ocp_version
 
 }
 
