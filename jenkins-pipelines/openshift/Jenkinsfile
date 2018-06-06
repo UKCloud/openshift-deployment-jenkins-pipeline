@@ -1,6 +1,6 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'master'
+    def openshiftHeatBranch = 'feature/staticRouteVariables'
     def openshiftDeploymentAnsibleBranch = 'hotfix/addUpstreamDNSToBind'
 
     stage('code-checkout') {
