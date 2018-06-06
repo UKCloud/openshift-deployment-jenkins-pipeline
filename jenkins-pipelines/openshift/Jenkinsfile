@@ -31,7 +31,7 @@ node ('openstack-jenkins-slave') {
         sh "echo export WORKER_SMALL_SCALE=`oc get secrets openshift --template='{{ .data.worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export WORKER_MEDIUM_SCALE=`oc get secrets openshift --template='{{ .data.worker_medium_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export WORKER_LARGE_SCALE=`oc get secrets openshift --template='{{ .data.worker_large_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.ocp_version }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.openshift_version }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
