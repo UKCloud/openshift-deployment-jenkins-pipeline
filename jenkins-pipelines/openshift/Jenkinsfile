@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
 
     def openshiftHeatBranch = 'master'
-    def openshiftDeploymentAnsibleBranch = 'master'
+    def openshiftDeploymentAnsibleBranch = 'hotfix/addUpstreamDNSToBind'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
