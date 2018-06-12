@@ -12,6 +12,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export OS_USERNAME=`oc get secrets openstack --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
         sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+        sh "echo -e \"  satellite_fqdn: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_fqdn }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+        sh "echo -e \"  satellite_deploy: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_deploy }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
         sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
         sh "echo export OS_TENANT_NAME=`oc get configmap openstack-config --template='{{ .data.openstack_project_name }}'` | tee -a openstack_rc.sh"
         sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
@@ -26,6 +28,12 @@ node ('openstack-jenkins-slave') {
         sh "echo export DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.domainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export CONTROL_PLANE_IP=`oc get secrets openshift --template='{{ .data.control_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export DATA_PLANE_IP=`oc get secrets openshift --template='{{ .data.data_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export WORKER_SMALL_SCALE=`oc get secrets openshift --template='{{ .data.worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export WORKER_MEDIUM_SCALE=`oc get secrets openshift --template='{{ .data.worker_medium_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export WORKER_LARGE_SCALE=`oc get secrets openshift --template='{{ .data.worker_large_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.openshift_version }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export SET_NODE_ROUTES=`oc get secrets openshift --template='{{ .data.set_node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -38,8 +46,9 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
-        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false" > environment.yaml')
+        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false\n  worker_small_scale: \$WORKER_SMALL_SCALE\n  worker_medium_scale: \$WORKER_MEDIUM_SCALE\n  worker_large_scale: \$WORKER_LARGE_SCALE\n  openshift_version: \$OCP_VERSION\n  set_node_routes: \$SET_NODE_ROUTES\n  node_routes: \$NODE_ROUTES" > environment.yaml')
         sh('cat environment.yaml')
+        sh('cat rhel_reg_creds.yaml')
         sh("source ./openstack_rc.sh ; ./deploy.sh false \$OS_PASSWORD")
     }
 
@@ -64,7 +73,7 @@ node ('openstack-jenkins-slave') {
         */
         sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
         sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git checkout $openshiftDeploymentAnsibleBranch'")
+        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git branch ; git checkout $openshiftDeploymentAnsibleBranch'; git branch")
     }
 
     stage('deploy openshift') {
