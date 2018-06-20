@@ -34,6 +34,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.openshift_version }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export SET_NODE_ROUTES=`oc get secrets openshift --template='{{ .data.set_node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export MULTINETWORK=`oc get secrets openshift --template='{{ .data.multinetwork }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -46,7 +48,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
-        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false\n  worker_small_scale: \$WORKER_SMALL_SCALE\n  worker_medium_scale: \$WORKER_MEDIUM_SCALE\n  worker_large_scale: \$WORKER_LARGE_SCALE\n  openshift_version: \$OCP_VERSION\n  set_node_routes: \$SET_NODE_ROUTES\n  node_routes: \$NODE_ROUTES" > environment.yaml')
+        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false\n  worker_small_scale: \$WORKER_SMALL_SCALE\n  worker_medium_scale: \$WORKER_MEDIUM_SCALE\n  worker_large_scale: \$WORKER_LARGE_SCALE\n  openshift_version: \$OCP_VERSION\n  set_node_routes: \$SET_NODE_ROUTES\n  node_routes: \$NODE_ROUTES\n  multinetwork: \$MULTINETWORK\n  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY" > environment.yaml')
         sh('cat environment.yaml')
         sh('cat rhel_reg_creds.yaml')
         sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
