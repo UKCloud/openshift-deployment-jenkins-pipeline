@@ -125,4 +125,6 @@ node ('openstack-jenkins-slave') {
                 "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
         """)
     }
+
+    slackSend color: 'good', message: 'Pipeline completed successfully'
 }
