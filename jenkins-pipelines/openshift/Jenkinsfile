@@ -3,6 +3,8 @@ node ('openstack-jenkins-slave') {
     def openshiftHeatBranch = 'master'
     def openshiftDeploymentAnsibleBranch = 'master'
 
+    slackSend color: 'good', message: 'Pipeline starting'
+
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
     }
