@@ -128,4 +128,5 @@ node ('openstack-jenkins-slave') {
         """)
     }
 
+    slackSend color: 'good', message: 'Pipeline completed successfully'
 }
