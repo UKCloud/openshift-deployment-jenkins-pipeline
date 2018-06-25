@@ -1,9 +1,7 @@
 node ('openstack-jenkins-slave') {
 
-    def openshiftHeatBranch = 'feature/addExtraGateway'
+    def openshiftHeatBranch = 'master'
     def openshiftDeploymentAnsibleBranch = 'master'
-
-    slackSend color: 'good', message: 'Pipeline starting'
 
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
@@ -128,7 +126,4 @@ node ('openstack-jenkins-slave') {
         """)
     }
 
-    /*
-    slackSend color: 'good', message: 'Pipeline completed successfully'
-    */
 }
