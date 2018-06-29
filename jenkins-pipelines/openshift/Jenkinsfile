@@ -10,6 +10,7 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup OpenStack credentials') {
+        sh "echo \"\" > openstack_rc.sh"
         sh "echo export OS_PASSWORD=`oc get secrets openstack --template='{{ .data.password }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export OS_USERNAME=`oc get secrets openstack --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
@@ -50,7 +51,30 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
-        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false\n  worker_small_scale: \$WORKER_SMALL_SCALE\n  worker_medium_scale: \$WORKER_MEDIUM_SCALE\n  worker_large_scale: \$WORKER_LARGE_SCALE\n  openshift_version: \$OCP_VERSION\n  set_node_routes: \$SET_NODE_ROUTES\n  node_routes: \$NODE_ROUTES\n  multinetwork: \$MULTINETWORK\n  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY" > environment.yaml')
+
+        sh('''
+            source ./openstack_rc.sh
+            echo "parameter_defaults:"                             > environment.yaml
+            echo "  key_name: jenkins"                            >> environment.yaml
+            echo "  domain_suffix: \$DOMAIN_SUFFIX"               >> environment.yaml
+            echo "  openshift_openstack_username: \$OS_USERNAME"  >> environment.yaml
+            echo "  s3_region_endpoint: \$S3_REGION_ENDPOINT"     >> environment.yaml
+            echo "  s3_access_key: \$S3_ACCESS_KEY"               >> environment.yaml
+            echo "  s3_secret_key: \$S3_SECRET_KEY"               >> environment.yaml
+            echo "  s3_bucket_name: \$S3_BUCKET_NAME"             >> environment.yaml
+            echo "  setupMonitoring: true"                        >> environment.yaml
+            echo "  controlplane_floating_ip: \$CONTROL_PLANE_IP" >> environment.yaml
+            echo "  dataplane_floating_ip: \$DATA_PLANE_IP"       >> environment.yaml
+            echo "  do_upgrades: false"                           >> environment.yaml
+            echo "  worker_small_scale: \$WORKER_SMALL_SCALE"     >> environment.yaml
+            echo "  worker_medium_scale: \$WORKER_MEDIUM_SCALE"   >> environment.yaml
+            echo "  worker_large_scale: \$WORKER_LARGE_SCALE"     >> environment.yaml
+            echo "  openshift_version: \$OCP_VERSION"             >> environment.yaml
+            echo "  set_node_routes: \$SET_NODE_ROUTES"           >> environment.yaml
+            echo "  node_routes: \$NODE_ROUTES"                   >> environment.yaml
+            echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
+            echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
+        ''')
         sh('cat environment.yaml')
         sh('cat rhel_reg_creds.yaml')
         sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
