@@ -1,132 +1,141 @@
 node ('openstack-jenkins-slave') {
+    try {
+        def openshiftHeatBranch = 'master'
+        def openshiftDeploymentAnsibleBranch = 'master'
 
-    def openshiftHeatBranch = 'master'
-    def openshiftDeploymentAnsibleBranch = 'master'
+        slackSend color: 'good', message: 'Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}'
 
-    slackSend color: 'good', message: 'Pipeline starting'
+        stage('code-checkout') {
+            git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
+        }
 
-    stage('code-checkout') {
-        git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
-    }
+        stage('setup OpenStack credentials') {
+            sh "echo export OS_PASSWORD=`oc get secrets openstack --template='{{ .data.password }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export OS_USERNAME=`oc get secrets openstack --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
+            sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+            sh "echo -e \"  satellite_fqdn: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_fqdn }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+            sh "echo -e \"  satellite_deploy: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_deploy }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
+            sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
+            sh "echo export OS_TENANT_NAME=`oc get configmap openstack-config --template='{{ .data.openstack_project_name }}'` | tee -a openstack_rc.sh"
+            sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
+            sh "echo export S3_ACCESS_KEY=`oc get secrets s3parameters --template='{{ .data.s3accesskey }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export S3_REGION_ENDPOINT=`oc get secrets s3parameters --template='{{ .data.s3regionendpoint }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export OPENSHIFT_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export OPENSHIFT_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export ADMIN_USERNAME=`oc get secrets openshift --template='{{ .data.adminuser }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export ADMIN_PASSWORD=`oc get secrets openshift --template='{{ .data.adminpass }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.domainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export CONTROL_PLANE_IP=`oc get secrets openshift --template='{{ .data.control_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export DATA_PLANE_IP=`oc get secrets openshift --template='{{ .data.data_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export WORKER_SMALL_SCALE=`oc get secrets openshift --template='{{ .data.worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export WORKER_MEDIUM_SCALE=`oc get secrets openshift --template='{{ .data.worker_medium_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export WORKER_LARGE_SCALE=`oc get secrets openshift --template='{{ .data.worker_large_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.openshift_version }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export SET_NODE_ROUTES=`oc get secrets openshift --template='{{ .data.set_node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export MULTINETWORK=`oc get secrets openshift --template='{{ .data.multinetwork }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
+        }
 
-    stage('setup OpenStack credentials') {
-        sh "echo export OS_PASSWORD=`oc get secrets openstack --template='{{ .data.password }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OS_USERNAME=`oc get secrets openstack --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo -e \"parameter_defaults:\\n  rhn_orgid: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_org }}' | base64 --decode`\" | tee rhel_reg_creds.yaml"
-        sh "echo -e \"  rhn_activationkey: `oc get secrets rhelsubscriptions --template='{{ .data.rhel_activation_key }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
-        sh "echo -e \"  satellite_fqdn: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_fqdn }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
-        sh "echo -e \"  satellite_deploy: `oc get secrets rhelsubscriptions --template='{{ .data.satellite_deploy }}' | base64 --decode`\" | tee -a rhel_reg_creds.yaml"
-        sh "echo export OS_TENANT_ID=`oc get configmap openstack-config --template='{{ .data.openstack_project_id }}'` | tee -a openstack_rc.sh"
-        sh "echo export OS_TENANT_NAME=`oc get configmap openstack-config --template='{{ .data.openstack_project_name }}'` | tee -a openstack_rc.sh"
-        sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
-        sh "echo export S3_ACCESS_KEY=`oc get secrets s3parameters --template='{{ .data.s3accesskey }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export S3_REGION_ENDPOINT=`oc get secrets s3parameters --template='{{ .data.s3regionendpoint }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export S3_BUCKET_NAME=`oc get secrets s3parameters --template='{{ .data.s3bucketname }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OPENSHIFT_USERNAME=`oc get secrets openshift --template='{{ .data.username }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OPENSHIFT_PASSWORD=`oc get secrets openshift --template='{{ .data.userpass }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export ADMIN_USERNAME=`oc get secrets openshift --template='{{ .data.adminuser }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export ADMIN_PASSWORD=`oc get secrets openshift --template='{{ .data.adminpass }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.domainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export CONTROL_PLANE_IP=`oc get secrets openshift --template='{{ .data.control_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export DATA_PLANE_IP=`oc get secrets openshift --template='{{ .data.data_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export WORKER_SMALL_SCALE=`oc get secrets openshift --template='{{ .data.worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export WORKER_MEDIUM_SCALE=`oc get secrets openshift --template='{{ .data.worker_medium_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export WORKER_LARGE_SCALE=`oc get secrets openshift --template='{{ .data.worker_large_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.openshift_version }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export SET_NODE_ROUTES=`oc get secrets openshift --template='{{ .data.set_node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export MULTINETWORK=`oc get secrets openshift --template='{{ .data.multinetwork }}' | base64 --decode` | tee -a openstack_rc.sh"
-        sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
-    }
+        stage('cleanup HEAT environment') {
+            sh 'source ./openstack_rc.sh ; openstack stack show openshift-\$OS_TENANT_NAME && openstack stack delete openshift-\$OS_TENANT_NAME --wait --yes || echo stack not found'
+        }
 
-    stage('cleanup HEAT environment') {
-        sh 'source ./openstack_rc.sh ; openstack stack show openshift-\$OS_TENANT_NAME && openstack stack delete openshift-\$OS_TENANT_NAME --wait --yes || echo stack not found'
-    }
+        stage('setup host keys') {
+            sh 'source ./openstack_rc.sh ; openstack keypair delete jenkins ; openstack keypair create jenkins | tee -a id_rsa_jenkins'
+            sh("chmod 600 id_rsa_jenkins")
+        }
 
-    stage('setup host keys') {
-        sh 'source ./openstack_rc.sh ; openstack keypair delete jenkins ; openstack keypair create jenkins | tee -a id_rsa_jenkins'
-        sh("chmod 600 id_rsa_jenkins")
-    }
+        stage('setup HEAT environment') {
+            sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false\n  worker_small_scale: \$WORKER_SMALL_SCALE\n  worker_medium_scale: \$WORKER_MEDIUM_SCALE\n  worker_large_scale: \$WORKER_LARGE_SCALE\n  openshift_version: \$OCP_VERSION\n  set_node_routes: \$SET_NODE_ROUTES\n  node_routes: \$NODE_ROUTES\n  multinetwork: \$MULTINETWORK\n  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY" > environment.yaml')
+            sh('cat environment.yaml')
+            sh('cat rhel_reg_creds.yaml')
+            sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
+        }
 
-    stage('setup HEAT environment') {
-        sh('source ./openstack_rc.sh ; echo -e "parameter_defaults:\n  key_name: jenkins\n  domain_suffix: \$DOMAIN_SUFFIX\n  openshift_openstack_username: \$OS_USERNAME\n  s3_region_endpoint: \$S3_REGION_ENDPOINT\n  s3_access_key: \$S3_ACCESS_KEY\n  s3_secret_key: \$S3_SECRET_KEY\n  s3_bucket_name: \$S3_BUCKET_NAME\n  setupMonitoring: true\n  controlplane_floating_ip: \$CONTROL_PLANE_IP\n  dataplane_floating_ip: \$DATA_PLANE_IP\n  do_upgrades: false\n  worker_small_scale: \$WORKER_SMALL_SCALE\n  worker_medium_scale: \$WORKER_MEDIUM_SCALE\n  worker_large_scale: \$WORKER_LARGE_SCALE\n  openshift_version: \$OCP_VERSION\n  set_node_routes: \$SET_NODE_ROUTES\n  node_routes: \$NODE_ROUTES\n  multinetwork: \$MULTINETWORK\n  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY" > environment.yaml')
-        sh('cat environment.yaml')
-        sh('cat rhel_reg_creds.yaml')
-        sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
-    }
+        stage('Set variables HEAT deployment') {
+            sh("""
+                source ./openstack_rc.sh;
+                openstack stack output show openshift-\$OS_TENANT_NAME bastion_ip -f value -c output_value > env.vars
+            """)
+        }
 
-    stage('Set variables HEAT deployment') {
-        sh("""
-            source ./openstack_rc.sh;
-            openstack stack output show openshift-\$OS_TENANT_NAME bastion_ip -f value -c output_value > env.vars
-        """)
-    }
+        def bastionip = readFile("env.vars").trim()
 
-    def bastionip = readFile("env.vars").trim()
+        stage('Test HEAT deployment') {
+            sh("echo BASTION IP = ${bastionip}")
+            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
+        }
 
-    stage('Test HEAT deployment') {
-        sh("echo BASTION IP = ${bastionip}")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'uname -a'")
-    }
+        stage('checkout openshift deployment code') {
+            /*
+               openshift-deplyment-ansible is cloned on the Bastion Host via
+               HEAT, so we don't need to clone it here
+            */
+            sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
+            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
+            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git branch ; git checkout $openshiftDeploymentAnsibleBranch'; git branch")
+        }
 
-    stage('checkout openshift deployment code') {
+        stage('deploy openshift') {
+            sh("""
+                source ./openstack_rc.sh;
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\" \"\$OPENSHIFT_USERNAME\" \"\$OPENSHIFT_PASSWORD\""
+            """)
+        }
+
         /*
-           openshift-deplyment-ansible is cloned on the Bastion Host via
-           HEAT, so we don't need to clone it here
+            The environment variables set by the pipeline need to be overwritten.
+            The kubernetes parts of the pipeline automatically override the target
+            host, so therefore need to unset them so you can deploy pods within
+            the correct environment.
         */
-        sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
-        sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git branch ; git checkout $openshiftDeploymentAnsibleBranch'; git branch")
+        stage('validate openshift deployment') {
+            sh("""
+                source ./openstack_rc.sh;
+                git clone -b $openshiftDeploymentAnsibleBranch \
+                    https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
+
+                for var in \$(env | grep KUB | cut -d= -f1); do
+                    unset \$var;
+                done;
+
+                ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
+                    --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
+                    --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
+                    --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
+    	    ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
+    	    "/usr/share/ansible/openshift-deployment-ansible/tests/haproxy/master-failover-test.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\""
+            """)
+        }
+
+        /*
+            Test user creation works (using a randomly-generated password)
+        */
+        stage('validate openshift user creation') {
+            sh("""
+                source ./openstack_rc.sh;
+                RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
+
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
+                    "cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD"
+
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
+                    "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
+            """)
+        }
+
+        slackSend color: 'good', message: 'Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}'
+
+    } catch (e) {
+        // If there was an exception thrown, the build failed
+        slackSend color: '#c2001f', message: 'Pipeline failed :('
+        throw e
+    } finally {
+        // Success or failure, always send notifications
+        slackSend color: '#7ea8c8', message: 'Pipeline finished'
     }
-
-    stage('deploy openshift') {
-        sh("""
-            source ./openstack_rc.sh;
-            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\" \"\$OPENSHIFT_USERNAME\" \"\$OPENSHIFT_PASSWORD\""
-        """)
-    }
-
-    /*
-        The environment variables set by the pipeline need to be overwritten.
-        The kubernetes parts of the pipeline automatically override the target
-        host, so therefore need to unset them so you can deploy pods within
-        the correct environment.
-    */
-    stage('validate openshift deployment') {
-        sh("""
-            source ./openstack_rc.sh;
-            git clone -b $openshiftDeploymentAnsibleBranch \
-                https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
-
-            for var in \$(env | grep KUB | cut -d= -f1); do
-                unset \$var;
-            done;
-
-            ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
-                --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
-                --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
-                --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
-	    ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-	    "/usr/share/ansible/openshift-deployment-ansible/tests/haproxy/master-failover-test.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\""
-        """)
-    }
-
-    /*
-        Test user creation works (using a randomly-generated password)
-    */
-    stage('validate openshift user creation') {
-        sh("""
-            source ./openstack_rc.sh;
-            RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
-
-            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                "cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD"
-
-            ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
-        """)
-    }
-
-    slackSend color: 'good', message: 'Pipeline completed successfully'
 }
