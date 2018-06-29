@@ -55,7 +55,7 @@ node ('openstack-jenkins-slave') {
         sh('''
             source ./openstack_rc.sh
             echo "parameter_defaults:"                             > environment.yaml
-            echo "key_name: jenkins"                              >> environment.yaml
+            echo "  key_name: jenkins"                            >> environment.yaml
             echo "  domain_suffix: \$DOMAIN_SUFFIX"               >> environment.yaml
             echo "  openshift_openstack_username: \$OS_USERNAME"  >> environment.yaml
             echo "  s3_region_endpoint: \$S3_REGION_ENDPOINT"     >> environment.yaml
