@@ -3,6 +3,8 @@ node ('openstack-jenkins-slave') {
     def openshiftHeatBranch = 'master'
     def openshiftDeploymentAnsibleBranch = 'master'
 
+    slackSend color: 'good', message: 'Pipeline starting'
+
     stage('code-checkout') {
         git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
     }
@@ -35,6 +37,8 @@ node ('openstack-jenkins-slave') {
         sh "echo export OCP_VERSION=`oc get secrets openshift --template='{{ .data.openshift_version }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export SET_NODE_ROUTES=`oc get secrets openshift --template='{{ .data.set_node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
         sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export MULTINETWORK=`oc get secrets openshift --template='{{ .data.multinetwork }}' | base64 --decode` | tee -a openstack_rc.sh"
+        sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
     }
 
     stage('cleanup HEAT environment') {
@@ -47,10 +51,11 @@ node ('openstack-jenkins-slave') {
     }
 
     stage('setup HEAT environment') {
+
         sh('''
             source ./openstack_rc.sh
             echo "parameter_defaults:"                             > environment.yaml
-            echo "  key_name: jenkins"                            >> environment.yaml
+            echo "key_name: jenkins"                              >> environment.yaml
             echo "  domain_suffix: \$DOMAIN_SUFFIX"               >> environment.yaml
             echo "  openshift_openstack_username: \$OS_USERNAME"  >> environment.yaml
             echo "  s3_region_endpoint: \$S3_REGION_ENDPOINT"     >> environment.yaml
@@ -67,10 +72,12 @@ node ('openstack-jenkins-slave') {
             echo "  openshift_version: \$OCP_VERSION"             >> environment.yaml
             echo "  set_node_routes: \$SET_NODE_ROUTES"           >> environment.yaml
             echo "  node_routes: \$NODE_ROUTES"                   >> environment.yaml
+            echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
+            echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
         ''')
         sh('cat environment.yaml')
         sh('cat rhel_reg_creds.yaml')
-        sh("source ./openstack_rc.sh ; ./deploy.sh false \$OS_PASSWORD")
+        sh("source ./openstack_rc.sh ; ./deploy.sh \$OS_PASSWORD")
     }
 
     stage('Set variables HEAT deployment') {
@@ -144,4 +151,6 @@ node ('openstack-jenkins-slave') {
                 "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
         """)
     }
+
+    slackSend color: 'good', message: 'Pipeline completed successfully'
 }

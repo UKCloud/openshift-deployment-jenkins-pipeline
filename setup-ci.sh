@@ -48,6 +48,12 @@ read usesatellite
 echo 'Version of OpenShift to deploy'
 read ocp_version
 
+echo 'Deploy with multiple networks? True/False'
+read multinetwork
+
+echo 'Deploy extra gateway? (VRF for example) True/False'
+read deploy_extra_gateway
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -88,9 +94,11 @@ function setup_openstack_variables() {
         --from-literal=adminpass=$openshiftadminpass \
         --from-literal=userpass=$openshiftdemopass \
         --from-literal=domainsuffix=$domainsuffix \
-        --from-literal=data_plane_ip=$dataplane_floating_ip
-        --from-literal=control_plane_ip=$controlplane_floating_ip
-        --from-literal=openshift_version=$ocp_version
+        --from-literal=data_plane_ip=$dataplane_floating_ip \
+        --from-literal=control_plane_ip=$controlplane_floating_ip \
+        --from-literal=openshift_version=$ocp_version \
+        --from-literal=multinetwork=$multinetwork \
+        --from-literal=deploy_extra_gateway=$deploy_extra_gateway
 
 }
 
