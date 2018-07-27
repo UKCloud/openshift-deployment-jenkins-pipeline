@@ -29,6 +29,7 @@ node ('openstack-jenkins-slave') {
             sh "echo export ADMIN_USERNAME=`oc get secrets openshift --template='{{ .data.adminuser }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export ADMIN_PASSWORD=`oc get secrets openshift --template='{{ .data.adminpass }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.domainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export LOCAL_DOMAIN_SUFFIX=`oc get secrets openshift --template='{{ .data.localdomainsuffix }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export CONTROL_PLANE_IP=`oc get secrets openshift --template='{{ .data.control_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export DATA_PLANE_IP=`oc get secrets openshift --template='{{ .data.data_plane_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export WORKER_SMALL_SCALE=`oc get secrets openshift --template='{{ .data.worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
@@ -57,6 +58,7 @@ node ('openstack-jenkins-slave') {
                 echo "parameter_defaults:"                             > environment.yaml
                 echo "  key_name: jenkins"                            >> environment.yaml
                 echo "  domain_suffix: \$DOMAIN_SUFFIX"               >> environment.yaml
+                echo "  local_domain_suffix: \$LOCAL_DOMAIN_SUFFIX"   >> environment.yaml
                 echo "  openshift_openstack_username: \$OS_USERNAME"  >> environment.yaml
                 echo "  s3_region_endpoint: \$S3_REGION_ENDPOINT"     >> environment.yaml
                 echo "  s3_access_key: \$S3_ACCESS_KEY"               >> environment.yaml
