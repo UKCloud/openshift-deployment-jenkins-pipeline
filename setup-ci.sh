@@ -54,6 +54,18 @@ read multinetwork
 echo 'Deploy extra gateway? (VRF for example) True/False'
 read deploy_extra_gateway
 
+echo 'Please enter the local domain suffix'
+read localdomainsuffix
+
+echo 'Please enter the quantity of small workers required'
+read worker_small_scale
+
+echo 'Please enter the quantity of medium workers required'
+read worker_medium_scale
+
+echo 'Please enter the quantity of large workers required'
+read worker_large_scale
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -94,11 +106,15 @@ function setup_openstack_variables() {
         --from-literal=adminpass=$openshiftadminpass \
         --from-literal=userpass=$openshiftdemopass \
         --from-literal=domainsuffix=$domainsuffix \
+        --from-literal=localdomainsuffix=$localdomainsuffix \
         --from-literal=data_plane_ip=$dataplane_floating_ip \
         --from-literal=control_plane_ip=$controlplane_floating_ip \
         --from-literal=openshift_version=$ocp_version \
         --from-literal=multinetwork=$multinetwork \
-        --from-literal=deploy_extra_gateway=$deploy_extra_gateway
+        --from-literal=deploy_extra_gateway=$deploy_extra_gateway \
+        --from-literal=worker_small_scale=$worker_small_scale \
+        --from-literal=worker_medium_scale=$worker_medium_scale \
+        --from-literal=worker_large_scale=$worker_large_scale
 
 }
 
