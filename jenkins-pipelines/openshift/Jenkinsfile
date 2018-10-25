@@ -67,7 +67,7 @@ node ('openstack-jenkins-slave') {
                 echo "  setupMonitoring: true"                        >> environment.yaml
                 echo "  controlplane_floating_ip: \$CONTROL_PLANE_IP" >> environment.yaml
                 echo "  dataplane_floating_ip: \$DATA_PLANE_IP"       >> environment.yaml
-                echo "  do_upgrades: false"                           >> environment.yaml
+                echo "  do_upgrades: true"                            >> environment.yaml
                 echo "  worker_small_scale: \$WORKER_SMALL_SCALE"     >> environment.yaml
                 echo "  worker_medium_scale: \$WORKER_MEDIUM_SCALE"   >> environment.yaml
                 echo "  worker_large_scale: \$WORKER_LARGE_SCALE"     >> environment.yaml
