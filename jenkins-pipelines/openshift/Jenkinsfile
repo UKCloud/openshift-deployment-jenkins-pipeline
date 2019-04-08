@@ -3,7 +3,7 @@ node ('openstack-jenkins-slave') {
         def openshiftHeatBranch = 'satellite_upgrade'
         def openshiftDeploymentAnsibleBranch = 'v3.11'
 
-#        slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+//        slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
         stage('code-checkout') {
             git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
@@ -157,14 +157,14 @@ node ('openstack-jenkins-slave') {
             """)
         }
 
- #       slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+        //slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
     } catch (e) {
         // If there was an exception thrown, the build failed
-        #slackSend color: '#c2001f', message: "Pipeline failed :("
+        //slackSend color: '#c2001f', message: "Pipeline failed :("
         throw e
     } finally {
         // Success or failure, always send notifications
-        #slackSend color: '#7ea8c8', message: "Pipeline finished"
+        //slackSend color: '#7ea8c8', message: "Pipeline finished"
     }
 }
