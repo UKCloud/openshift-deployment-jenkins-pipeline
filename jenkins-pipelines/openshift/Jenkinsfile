@@ -78,7 +78,10 @@ node ('openstack-jenkins-slave') {
                 echo "  node_routes: \$NODE_ROUTES"                   >> environment.yaml
                 echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
-                echo "  registry_details:\n  registry_url: \$REG_URL\n  registry_user: \$REG_USER \n  registry_password: \$REG_PASSWORD"  >> environment.yaml
+                echo "  registry_details:"                            >> environment.yaml 
+                echo "    registry_url: \$REG_URL"                    >> environment.yaml
+                echo "    registry_user: \$REG_USER"                  >> environment.yaml
+                echo "    registry_password: \$REG_PASSWORD"          >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
