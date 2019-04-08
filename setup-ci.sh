@@ -124,7 +124,6 @@ function setup_openstack_variables() {
         --from-literal=worker_small_scale=$worker_small_scale \
         --from-literal=worker_medium_scale=$worker_medium_scale \
         --from-literal=worker_large_scale=$worker_large_scale \
-        --from-literal=worker_large_scale=$worker_large_scale \
         --from-literal=registry_url=$registry_url \
         --from-literal=registry_user=$registry_user \
         --from-literal=registry_password=$registry_password
