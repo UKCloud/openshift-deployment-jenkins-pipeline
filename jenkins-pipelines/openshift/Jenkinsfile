@@ -40,6 +40,9 @@ node ('openstack-jenkins-slave') {
             sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export MULTINETWORK=`oc get secrets openshift --template='{{ .data.multinetwork }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export REG_URL=`oc get secrets openshift --template='{{ .data.registry_url }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export REG_USER=`oc get secrets openshift --template='{{ .data.registry_user }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export REG_PASSWORD=`oc get secrets openshift --template='{{ .data.registry_password }}' | base64 --decode` | tee -a openstack_rc.sh"
         }
 
         stage('cleanup HEAT environment') {
@@ -75,6 +78,7 @@ node ('openstack-jenkins-slave') {
                 echo "  node_routes: \$NODE_ROUTES"                   >> environment.yaml
                 echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
+                echo "  registry_details:\n  registry_url: \$REG_URL\n  registry_user: \$REG_USER \n  registry_password: \$REG_PASSWORD"  >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')

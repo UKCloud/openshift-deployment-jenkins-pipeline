@@ -66,6 +66,15 @@ read worker_medium_scale
 echo 'Please enter the quantity of large workers required'
 read worker_large_scale
 
+echo 'Please provide the Red Hat registry URL'
+read registry_url
+
+echo 'Please provide the Red Hat registry user'
+read registry_user
+
+echo 'Please provide the Red Hat registry users password'
+read registry_password
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -114,7 +123,11 @@ function setup_openstack_variables() {
         --from-literal=deploy_extra_gateway=$deploy_extra_gateway \
         --from-literal=worker_small_scale=$worker_small_scale \
         --from-literal=worker_medium_scale=$worker_medium_scale \
-        --from-literal=worker_large_scale=$worker_large_scale
+        --from-literal=worker_large_scale=$worker_large_scale \
+        --from-literal=worker_large_scale=$worker_large_scale \
+        --from-literal=registry_url=$registry_url \
+        --from-literal=registry_user=$registry_user \
+        --from-literal=registry_password=$registry_password
 
 }
 
