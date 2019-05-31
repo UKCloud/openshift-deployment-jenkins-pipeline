@@ -79,7 +79,7 @@ node ('openstack-jenkins-slave') {
                 echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
                 echo "  registry_details:"                            >> environment.yaml 
-                echo "  registry_url: \$REG_URL"                      >> environment.yaml
+                echo "    registry_url: \$REG_URL"                      >> environment.yaml
                 echo "  registry_user: \$REG_USER"                    >> environment.yaml
                 echo "  registry_password: \$REG_PASSWORD"            >> environment.yaml
             ''')
