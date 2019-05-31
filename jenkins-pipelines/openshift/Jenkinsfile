@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
     try {
-        def openshiftHeatBranch = 'bastion_upgrade_fix'
-        def openshiftDeploymentAnsibleBranch = 'bastion_upgrade_fix'
+        def openshiftHeatBranch = 'v3.11'
+        def openshiftDeploymentAnsibleBranch = 'v3.11'
 
         slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
@@ -79,9 +79,9 @@ node ('openstack-jenkins-slave') {
                 echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
                 echo "  registry_details:"                            >> environment.yaml 
-                echo "    registry_url: \$REG_URL"                    >> environment.yaml
-                echo "    registry_user: \$REG_USER"                  >> environment.yaml
-                echo "    registry_password: \$REG_PASSWORD"          >> environment.yaml
+                echo "  registry_url: \$REG_URL"                      >> environment.yaml
+                echo "  registry_user: \$REG_USER"                    >> environment.yaml
+                echo "  registry_password: \$REG_PASSWORD"            >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
