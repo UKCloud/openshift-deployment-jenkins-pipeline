@@ -81,7 +81,7 @@ node ('openstack-jenkins-slave') {
                 echo "  registry_details:"                            >> environment.yaml 
                 echo "    registry_url: \$REG_URL"                      >> environment.yaml
                 echo "    registry_user: \$REG_USER"                    >> environment.yaml
-                echo "  registry_password: \$REG_PASSWORD"            >> environment.yaml
+                echo "    registry_password: \$REG_PASSWORD"            >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
