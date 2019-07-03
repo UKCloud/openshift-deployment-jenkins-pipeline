@@ -160,7 +160,7 @@ node ('openstack-jenkins-slave') {
             """)
         }
 
-        slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+        //slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
 
        stage('Cleanup HEAT deployment on successful deployment') {
