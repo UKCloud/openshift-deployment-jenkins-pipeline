@@ -24,7 +24,7 @@ node ('openstack-jenkins-slave') {
             sh "echo export OS_USER_DOMAIN_NAME=Default | tee -a openstack_rc.sh"
             sh "export OS_PROJECT_DOMAIN_ID=default | tee -a openstack_rc.sh"
 //            sh "echo export OS_AUTH_URL=`oc get configmap openstack-config --template='{{ .data.openstack_url }}'` | tee -a openstack_rc.sh"
-            sh "echo export OS_AUTH_URL=https://cor00005.cni.ukcloud.com:13000/v3
+            sh "echo export OS_AUTH_URL=https://cor00005.cni.ukcloud.com:13000/v3"
             sh "echo export S3_ACCESS_KEY=`oc get secrets s3parameters --template='{{ .data.s3accesskey }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export S3_SECRET_KEY=`oc get secrets s3parameters --template='{{ .data.s3secretkey }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export S3_REGION_ENDPOINT=`oc get secrets s3parameters --template='{{ .data.s3regionendpoint }}' | base64 --decode` | tee -a openstack_rc.sh"
