@@ -51,7 +51,8 @@ node ('openstack-jenkins-slave') {
         }
 
         stage('cleanup HEAT environment') {
-            sh 'source ./openstack_rc.sh ; openstack stack show openshift-\$OS_TENANT_NAME && openstack stack delete openshift-\$OS_TENANT_NAME --wait --yes || echo stack not found'
+            //sh 'source ./openstack_rc.sh ; openstack stack show openshift-\$OS_TENANT_NAME && openstack stack delete openshift-\$OS_TENANT_NAME --wait --yes || echo stack not found'
+            sh 'source ./openstack_rc.sh ; openstack stack show openshift-\$OS_PROJECT_NAME && openstack stack delete openshift-\$OS_PROJECT_NAME --wait --yes || echo stack not found'
         }
 
         stage('setup host keys') {
@@ -96,7 +97,8 @@ node ('openstack-jenkins-slave') {
         stage('Set variables HEAT deployment') {
             sh("""
                 source ./openstack_rc.sh;
-                openstack stack output show openshift-\$OS_TENANT_NAME bastion_ip -f value -c output_value > env.vars
+                //openstack stack output show openshift-\$OS_TENANT_NAME bastion_ip -f value -c output_value > env.vars
+                openstack stack output show openshift-\$OS_PROJECT_NAME bastion_ip -f value -c output_value > env.vars
             """)
         }
 
