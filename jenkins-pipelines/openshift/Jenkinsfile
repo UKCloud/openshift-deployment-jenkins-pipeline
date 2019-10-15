@@ -169,7 +169,7 @@ node ('openstack-jenkins-slave') {
        stage('Cleanup HEAT deployment on successful deployment') {
             sh("""
                 source ./openstack_rc.sh;
-                openstack stack delete openshift-\$OS_TENANT_NAME --wait --yes
+                openstack stack delete openshift-\$OS_PROJECT_NAME --wait --yes
             """)
         }
 
