@@ -137,7 +137,7 @@ node ('openstack-jenkins-slave') {
                     unset \$var;
                 done;
 
-                ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
+                ansible-playbook ./openshift-deployment-ansible/tests/all.yml -i openshift-ansible-hosts \
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                     --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                     --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
