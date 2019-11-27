@@ -147,6 +147,18 @@ node ('openstack-jenkins-slave') {
         }
 
         /*
+            using cluster loader 
+        */
+        stage('openshift cluster-loader tests') {
+            sh("""
+                source ./openstack_rc.sh;
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip
+                yum install atomic-openshift-tests
+
+            """)
+        }
+
+        /*
             Test user creation works (using a randomly-generated password)
         */
         stage('validate openshift user creation') {
