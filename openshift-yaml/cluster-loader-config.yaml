@@ -1,0 +1,8 @@
+ClusterLoader:
+  cleanup: true
+  projects:
+    - num: 1
+      basename: cluster-loader-test
+      pods:
+        - num: 1
+          image: https://github.com/OpenShiftDemos/os-sample-python.git
