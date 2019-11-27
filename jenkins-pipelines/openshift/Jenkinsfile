@@ -137,10 +137,11 @@ node ('openstack-jenkins-slave') {
                     unset \$var;
                 done;
 
-                ansible-playbook ./openshift-deployment-ansible/tests/all.yml -i openshift-ansible-hosts \
+                ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                     --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
-                    --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
+                    --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\" \
+                    --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\"
     	    ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
     	    "/usr/share/ansible/openshift-deployment-ansible/tests/haproxy/master-failover-test.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\""
             """)
@@ -148,6 +149,7 @@ node ('openstack-jenkins-slave') {
 
         /*
             using cluster loader 
+            https://docs.openshift.com/container-platform/3.11/scaling_performance/using_cluster_loader.html
         */
         stage('openshift cluster-loader tests') {
             sh("""
@@ -155,6 +157,9 @@ node ('openstack-jenkins-slave') {
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip
                 yum install atomic-openshift-tests
 
+                export KUBECONFIG=${KUBECONFIG-$HOME/.kube/config}
+                cd /usr/libexec/atomic-openshift/
+                ./extended.test --ginkgo.focus="Load cluster" --viper-config=openshift-yaml/cluster-loader-config
             """)
         }
 
