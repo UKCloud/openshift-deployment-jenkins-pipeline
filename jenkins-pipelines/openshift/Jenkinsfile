@@ -148,7 +148,7 @@ node ('openstack-jenkins-slave') {
         }
 
         /*
-            using cluster loader 
+            Tests an OpenShift cluster using cluster loader. 
             https://docs.openshift.com/container-platform/3.11/scaling_performance/using_cluster_loader.html
         */
         stage('openshift cluster-loader tests') {
