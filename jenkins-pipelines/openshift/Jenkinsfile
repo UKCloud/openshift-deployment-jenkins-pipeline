@@ -41,6 +41,13 @@ node ('openstack-jenkins-slave') {
             sh "echo export SET_NODE_ROUTES=`oc get secrets openshift --template='{{ .data.set_node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export NODE_ROUTES=`oc get secrets openshift --template='{{ .data.node_routes }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export MULTINETWORK=`oc get secrets openshift --template='{{ .data.multinetwork }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_DNS_SERVER=`oc get secrets openshift --template='{{ .data.net2_dns_server }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_NETWORK=`oc get secrets openshift --template='{{ .data.net2_external_network }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_GATEWAY_IP=`oc get secrets openshift --template='{{ .data.net2_gateway_internal_ip }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_NTP_SERVER=`oc get secrets openshift --template='{{ .data.net2_ntp_servers }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_LARGE_NODE=`oc get secrets openshift --template='{{ .data.net2_worker_large_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_MEDIUM_NODE=`oc get secrets openshift --template='{{ .data.net2_worker_medium_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NET2_SMALL_NODE=`oc get secrets openshift --template='{{ .data.net2_worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_URL=`oc get secrets openshift --template='{{ .data.registry_url }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_USER=`oc get secrets openshift --template='{{ .data.registry_user }}' | base64 --decode` | tee -a openstack_rc.sh"
@@ -79,11 +86,36 @@ node ('openstack-jenkins-slave') {
                 echo "  set_node_routes: \$SET_NODE_ROUTES"           >> environment.yaml
                 echo "  node_routes: \$NODE_ROUTES"                   >> environment.yaml
                 echo "  multinetwork: \$MULTINETWORK"                 >> environment.yaml
+                echo "  net2_dns_server: \$NET2_DNS_SERVER"           >> environment.yaml
+                echo "  net2_external_network: \$NET2_NETWORK"        >> environment.yaml
+                echo "  net2_gateway_internal_ip: \$NET2_GATEWAY_IP"  >> environment.yaml
+                echo "  net2_ntp_servers: \$NET2_NTP_SERVER"          >> environment.yaml
+                echo "  net2_worker_large_scale: \$NET2_LARGE_NODE"   >> environment.yaml
+                echo "  net2_worker_medium_scale: \$NET2_MEDIUM_NODE" >> environment.yaml
+                echo "  net2_worker_small_scale: \$NET2_SMALL_NODE"   >> environment.yaml
+                echo "  net2_node_routes:"                            >> environment.yaml
+                echo "    - gateway: "10.2.1.254""                    >> environment.yaml
+                echo "      route: "51.179.210.114/32""               >> environment.yaml
+                echo "    - gateway: "10.2.1.254""                    >> environment.yaml
+                echo "      route: "51.179.217.10/32""                >> environment.yaml
+                echo "    - gateway: "10.2.1.254""                    >> environment.yaml
+                echo "      route: "51.179.221.162/32""               >> environment.yaml
+                echo "  net2_routes:"                                 >> environment.yaml
+                echo "    - gateway: "10.2.1.254""                    >> environment.yaml
+                echo "      route: "51.179.219.220/32""               >> environment.yaml                        
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
+                echo "  ansible_branch: v3.11"                        >> environment.yaml
                 echo "  registry_details:"                            >> environment.yaml 
                 echo "    registry_url: \$REG_URL"                      >> environment.yaml
                 echo "    registry_user: \$REG_USER"                    >> environment.yaml
                 echo "    registry_password: \$REG_PASSWORD"            >> environment.yaml
+                echo "  network_config:                                                   >> environment.yaml
+                echo "    allocation_pool: [{"start": "10.2.1.2", "end": "10.2.1.100"}]"  >> environment.yaml
+                echo "    cidr: "10.2.1.0/24""                                            >> environment.yaml
+                echo "    dns: [ "1.1.1.1" ]"                                             >> environment.yaml
+                echo "    gateway: "10.2.1.254""                                          >> environment.yaml
+                echo "    bastion_ip: "10.2.1.101""                                       >> environment.yaml
+                echo "    service_subnet: "10.2.1.240/29""                                >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
