@@ -48,6 +48,8 @@ node ('openstack-jenkins-slave') {
             sh "echo export NET2_LARGE_NODE=`oc get secrets openshift --template='{{ .data.net2_worker_large_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export NET2_MEDIUM_NODE=`oc get secrets openshift --template='{{ .data.net2_worker_medium_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export NET2_SMALL_NODE=`oc get secrets openshift --template='{{ .data.net2_worker_small_scale }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export SLACK_WEBHOOK=`oc get secrets openshift --template='{{ .data.slack_webhook_url_acme_sh }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export NEUSTAR_PASSWORD=`oc get secrets openshift --template='{{ .data.neustar_ultradns_password }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export DEPLOYEXTRAGATEWAY=`oc get secrets openshift --template='{{ .data.deploy_extra_gateway }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_URL=`oc get secrets openshift --template='{{ .data.registry_url }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_USER=`oc get secrets openshift --template='{{ .data.registry_user }}' | base64 --decode` | tee -a openstack_rc.sh"
@@ -105,6 +107,9 @@ node ('openstack-jenkins-slave') {
                 echo "      route: "51.179.219.220/32""               >> environment.yaml                        
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
                 echo "  ansible_branch: v3.11"                        >> environment.yaml
+                echo "  slack_webhook_url_acme_sh: \$SLACK_WEBHOOK"   >> environment.yaml
+                echo "  neustar_ultradns_username: "openshift""       >> environment.yaml
+                echo "  neustar_ultradns_password: \$NEUSTAR_PASSWORD"  >> environment.yaml
                 echo "  registry_details:"                            >> environment.yaml 
                 echo "    registry_url: \$REG_URL"                      >> environment.yaml
                 echo "    registry_user: \$REG_USER"                    >> environment.yaml
