@@ -155,7 +155,7 @@ node ('openstack-jenkins-slave') {
             sh("""
                 source ./openstack_rc.sh;
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip
-                yum install atomic-openshift-tests
+                sudo yum install atomic-openshift-tests --disableexcludes=main
 
                 export KUBECONFIG=${KUBECONFIG-$HOME/.kube/config}
                 cd /usr/libexec/atomic-openshift/
