@@ -158,8 +158,7 @@ node ('openstack-jenkins-slave') {
                 sudo yum install atomic-openshift-tests --disableexcludes=main
 
                 export KUBECONFIG=${KUBECONFIG-$HOME/.kube/config}
-                cd /usr/libexec/atomic-openshift/
-                ./extended.test --ginkgo.focus="Load cluster" --viper-config=openshift-yaml/cluster-loader-config
+                /usr/libexec/atomic-openshift/extended.test --ginkgo.focus="Load cluster" --viper-config=../../openshift-yaml/cluster-loader-config
             """)
         }
 
