@@ -54,6 +54,7 @@ node ('openstack-jenkins-slave') {
             sh "echo export REG_URL=`oc get secrets openshift --template='{{ .data.registry_url }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_USER=`oc get secrets openshift --template='{{ .data.registry_user }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_PASSWORD=`oc get secrets openshift --template='{{ .data.registry_password }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export DEPLOY_KEY=`oc get secrets openshift --template='{{ .data.deploy_key }}' | base64 --decode` | tee -a openstack_rc.sh"
         }
 
         stage('cleanup HEAT environment') {
@@ -121,6 +122,7 @@ node ('openstack-jenkins-slave') {
                 echo "    gateway: "10.2.1.254""                                          >> environment.yaml
                 echo "    bastion_ip: "10.2.1.101""                                       >> environment.yaml
                 echo "    service_subnet: "10.2.1.240/29""                                >> environment.yaml
+                echo "\$DEPLOY_KEY"                                    >> deploy.pem
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
@@ -143,9 +145,11 @@ node ('openstack-jenkins-slave') {
 
         stage('checkout openshift deployment code') {
             /*
-               openshift-deplyment-ansible is cloned on the Bastion Host via
-               HEAT, so we don't need to clone it here
+               openshift-tooling is a private repo, we scp the deploy key
+               and pull the code here
             */
+            sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins deploy.pem cloud-user@$bastionip:")
+            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 deploy.pem'")            
             sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
             sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
             sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git branch ; git checkout $openshiftDeploymentAnsibleBranch'; git branch")
@@ -154,6 +158,8 @@ node ('openstack-jenkins-slave') {
         stage('deploy openshift') {
             sh("""
                 source ./openstack_rc.sh;
+                ssh-add deploy.pem;
+                git clone git@github.com:UKCloud/openshift-tooling.git;
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\" \"\$OPENSHIFT_USERNAME\" \"\$OPENSHIFT_PASSWORD\""
             """)
         }
