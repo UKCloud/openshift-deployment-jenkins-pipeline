@@ -109,7 +109,7 @@ node ('openstack-jenkins-slave') {
                 echo "    registry_url: \$REG_URL"                      >> environment.yaml
                 echo "    registry_user: \$REG_USER"                    >> environment.yaml
                 echo "    registry_password: \$REG_PASSWORD"            >> environment.yaml
-                echo "  network_config:                                                   >> environment.yaml
+                echo "  network_config:"                                                  >> environment.yaml
                 echo "    allocation_pool: [{"start": "10.2.1.2", "end": "10.2.1.100"}]"  >> environment.yaml
                 echo "    cidr: "10.2.1.0/24""                                            >> environment.yaml
                 echo "    dns: [ "1.1.1.1" ]"                                             >> environment.yaml
