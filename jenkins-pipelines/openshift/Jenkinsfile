@@ -159,6 +159,7 @@ node ('openstack-jenkins-slave') {
             sh("""
                 source ./openstack_rc.sh;
                 ssh-add deploy.pem;
+                cd /home/cloud-user;
                 git clone git@github.com:UKCloud/openshift-tooling.git;
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "cd /usr/share/ansible/openshift-deployment-ansible ; ./deploy-openshift.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\" \"\$OPENSHIFT_USERNAME\" \"\$OPENSHIFT_PASSWORD\""
             """)
