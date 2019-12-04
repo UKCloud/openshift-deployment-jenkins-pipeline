@@ -54,7 +54,7 @@ node ('openstack-jenkins-slave') {
             sh "echo export REG_URL=`oc get secrets openshift --template='{{ .data.registry_url }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_USER=`oc get secrets openshift --template='{{ .data.registry_user }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_PASSWORD=`oc get secrets openshift --template='{{ .data.registry_password }}' | base64 --decode` | tee -a openstack_rc.sh"
-            sh "echo export DEPLOY_KEY=`oc get secrets openshift --template='{{ .data.deploy_key }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo \"export DEPLOY_KEY=`oc get secrets openshift --template='{{ .data.deploy_key }}' | base64 --decode`\" | tee -a openstack_rc.sh"
         }
 
         stage('cleanup HEAT environment') {
