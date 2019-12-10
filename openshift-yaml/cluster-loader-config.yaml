@@ -3,36 +3,42 @@ ClusterLoader:
   projects:
     - num: 1
       basename: cluster-loader-test-sample-python
+      ifexists: reuse
       pods:
         - num: 32
           image: https://github.com/OpenShiftDemos/os-sample-python.git
 
     - num: 1
       basename: cluster-loader-test-postgresql
+      ifexists: reuse
       pods:
         - num: 32
           image: registry.redhat.io/rhscl/postgresql-95-rhel7
 
     - num: 1
       basename: cluster-loader-test-apache
+      ifexists: reuse
       pods:
         - num: 32
           image: centos/httpd-24-centos7~https://github.com/sclorg/httpd-ex
 
     - num: 1
       basename: cluster-loader-test-mongo
+      ifexists: reuse
       pods:
         - num: 32
           image: registry.access.redhat.com/rhscl/mongodb-36-rhel7
 
     - num: 1
       basename: cluster-loader-test-mariadb
+      ifexists: reuse
       pods:
         - num: 32
           image: registry.access.redhat.com/rhscl/mariadb-102-rhel7
 
     - num: 1
       basename: cluster-loader-test-mysql
+      ifexists: reuse
       pods:
         - num: 32
           image: registry.access.redhat.com/rhscl/mysql-57-rhel7
