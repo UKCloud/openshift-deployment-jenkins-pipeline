@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
     try {
         def openshiftHeatBranch = 'v3.11'
-        def openshiftDeploymentAnsibleBranch = 'feature/network-object-tests'
+        def openshiftDeploymentAnsibleBranch = 'v3.11'
 
         //slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
