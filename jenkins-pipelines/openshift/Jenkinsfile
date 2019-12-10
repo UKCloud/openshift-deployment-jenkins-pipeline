@@ -192,7 +192,8 @@ node ('openstack-jenkins-slave') {
             sh("""
                 source ./openstack_rc.sh;
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip
-                ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /home/cloud-user/openshift-tooling/locust/locust_setup.yaml
+                ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /home/cloud-user/openshift-tooling/locust/locust_setup.yaml \
+                    --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\"
             """)
         }
 
