@@ -148,7 +148,7 @@ node ('openstack-jenkins-slave') {
                and pull the code here
             */
             sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins deploy.pem cloud-user@$bastionip:")
-            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 0600 deploy.pem ; eval \$(ssh-agent -s) ; ssh-add deploy.pem ; ssh-keyscan -t rsa github.com >> /home/cloud-user/.ssh/known_hosts ; git clone git@github.com:UKCloud/openshift-tooling.git'") 
+            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 0600 deploy.pem ; eval \$(ssh-agent -s) ; ssh-add deploy.pem ; ssh-keyscan -t rsa github.com >> /home/cloud-user/.ssh/known_hosts ; git clone git@github.com:UKCloud/openshift-tooling.git; git checkout locust-fix-take-2'") 
             sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
             sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
             sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git branch ; git checkout $openshiftDeploymentAnsibleBranch'; git branch")
@@ -192,7 +192,7 @@ node ('openstack-jenkins-slave') {
             sh("""
                 source ./openstack_rc.sh;
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                    "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /home/cloud-user/openshift-tooling/locust/locust_setup.yaml --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\""
+                    "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /home/cloud-user/openshift-tooling/locust/locust_setup.yaml --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\" -vv"
             """)
         }
 
