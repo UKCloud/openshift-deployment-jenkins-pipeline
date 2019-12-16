@@ -181,7 +181,7 @@ node ('openstack-jenkins-slave') {
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                     --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                     --extra-vars ADMIN_USERNAME=\"\$ADMIN_PASSWORD\" \
-                    --extra-vars AADMIN_PASSWORD=\"\$ADMIN_PASSWORD\" \
+                    --extra-vars ADMIN_PASSWORD=\"\$ADMIN_PASSWORD\" \
                     --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\"
             """)
         }
