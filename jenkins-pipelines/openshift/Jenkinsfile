@@ -180,7 +180,7 @@ node ('openstack-jenkins-slave') {
                 ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                     --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
-                    --extra-vars ADMIN_USERNAME=\"\$ADMIN_PASSWORD\" \
+                    --extra-vars ADMIN_USERNAME=\"\$ADMIN_USERNAME\" \
                     --extra-vars ADMIN_PASSWORD=\"\$ADMIN_PASSWORD\" \
                     --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\"
             """)
