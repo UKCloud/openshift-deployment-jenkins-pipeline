@@ -170,19 +170,17 @@ node ('openstack-jenkins-slave') {
         stage('validate openshift deployment') {
             sh("""
                 source ./openstack_rc.sh;
-                git clone -b $openshiftDeploymentAnsibleBranch \
-                    https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
 
-                for var in \$(env | grep KUB | cut -d= -f1); do
-                    unset \$var;
-                done;
+                #for var in \$(env | grep KUB | cut -d= -f1); do
+                #    unset \$var;
+                'done;
 
-                ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook /usr/share/ansible/openshift-deployment-ansible/tests/all.yml \
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                     --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
                     --extra-vars ADMIN_USERNAME=\"\$ADMIN_USERNAME\" \
                     --extra-vars ADMIN_PASSWORD=\"\$ADMIN_PASSWORD\" \
-                    --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\"
+                    --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\""
             """)
         }
 
