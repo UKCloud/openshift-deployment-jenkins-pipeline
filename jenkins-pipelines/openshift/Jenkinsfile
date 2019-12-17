@@ -171,9 +171,9 @@ node ('openstack-jenkins-slave') {
             sh("""
                 source ./openstack_rc.sh;
 
-                #for var in \$(env | grep KUB | cut -d= -f1); do
-                #    unset \$var;
-                #'done;
+                for var in \$(env | grep KUB | cut -d= -f1); do
+                    unset \$var;
+                done;
 
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook /usr/share/ansible/openshift-deployment-ansible/tests/all.yml \
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
