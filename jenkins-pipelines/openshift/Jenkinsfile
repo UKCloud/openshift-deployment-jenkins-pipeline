@@ -161,30 +161,19 @@ node ('openstack-jenkins-slave') {
             """)
         }
 
-        /*
-            The environment variables set by the pipeline need to be overwritten.
-            The kubernetes parts of the pipeline automatically override the target
-            host, so therefore need to unset them so you can deploy pods within
-            the correct environment.
-        */
         stage('validate openshift deployment') {
             sh("""
                 source ./openstack_rc.sh;
-                git clone -b $openshiftDeploymentAnsibleBranch \
-                    https://github.com/UKCloud/openshift-deployment-ansible.git openshift-deployment-ansible
 
-                for var in \$(env | grep KUB | cut -d= -f1); do
-                    unset \$var;
-                done;
-
-                ansible-playbook ./openshift-deployment-ansible/tests/all.yml \
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tests/all.yml \
                     --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
                     --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
-                    --extra-vars server=\"https://ocp.\$DOMAIN_SUFFIX:8443\"
-    	    ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-    	    "/usr/share/ansible/openshift-deployment-ansible/tests/haproxy/master-failover-test.sh \"\$ADMIN_USERNAME\" \"\$ADMIN_PASSWORD\""
+                    --extra-vars ADMIN_USERNAME=\"\$ADMIN_USERNAME\" \
+                    --extra-vars ADMIN_PASSWORD=\"\$ADMIN_PASSWORD\" \
+                    --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\""
             """)
         }
+
 
         /*
             Test cluster cronjobs
@@ -224,8 +213,8 @@ node ('openstack-jenkins-slave') {
             """)
         }
 
-        //slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
+        //slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
        stage('Cleanup HEAT deployment on successful deployment') {
             sh("""
