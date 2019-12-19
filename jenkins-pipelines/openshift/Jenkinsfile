@@ -175,9 +175,7 @@ node ('openstack-jenkins-slave') {
         }
 
 
-        /*
-            Test cluster cronjobs
-        */
+
         stage('validate cluster cronjobs') {
             sh("""
                 source ./openstack_rc.sh;
