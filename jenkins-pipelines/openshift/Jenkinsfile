@@ -177,20 +177,14 @@ node ('openstack-jenkins-slave') {
 
 
         stage('validate cluster cronjobs') {
-            sh("""
+            sh("
                 source ./openstack_rc.sh;
 
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                    "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/backup.yml";
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/backup.yml";
 
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                    "ansible-playbook -v -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/docker-prune.yaml";
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -v -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/docker-prune.yaml";
                 
-                if [ $MULTINETWORK ]
-                then
-                    ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                        "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"
-               fi
+                if [ \$MULTINETWORK ]; then ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"; fi
             """)
         }
 
