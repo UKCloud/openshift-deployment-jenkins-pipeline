@@ -184,7 +184,9 @@ node ('openstack-jenkins-slave') {
 
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -v -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/docker-prune.yaml";
                 
-                if [ \$MULTINETWORK ]; then ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"; fi
+               echo \"\$MULTINETWORK\" ;
+                
+                if [ \"\$MULTINETWORK\" = true ]; then ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"; fi
             """)
         }
 
