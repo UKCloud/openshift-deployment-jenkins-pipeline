@@ -1,7 +1,7 @@
 node ('openstack-jenkins-slave') {
     try {
         def openshiftHeatBranch = 'v3.11'
-        def openshiftDeploymentAnsibleBranch = 'cronjob_tests'
+        def openshiftDeploymentAnsibleBranch = 'v3.11'
 
         //slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
@@ -183,8 +183,6 @@ node ('openstack-jenkins-slave') {
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/backup.yml";
 
                 ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -v -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/docker-prune.yaml";
-                
-               echo \"\$MULTINETWORK\" ;
                 
                 if [ \"\$MULTINETWORK\" = true ]; then ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"; fi
             """)
