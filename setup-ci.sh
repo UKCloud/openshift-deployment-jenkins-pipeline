@@ -1,6 +1,9 @@
 #!/bin/bash
 
-echo 'Please enter the password for the openstack CI user (openshift@ukcloud.com)'
+echo 'Please enter the username for the openstack CI user'
+read password
+
+echo 'Please enter the password for the openstack CI user'
 read password
 
 echo 'Please enter the s3accesskey'
@@ -66,6 +69,36 @@ read worker_medium_scale
 echo 'Please enter the quantity of large workers required'
 read worker_large_scale
 
+echo 'Please enter the quantity of infrastructure workers required'
+read infra_scale
+
+echo 'Please enter the quantity of net2 small workers required'
+read net2_small_scale
+
+echo 'Please enter the quantity of net2 medium workers required'
+read net2_medium_scale
+
+echo 'Please enter the quantity of net2 large workers required'
+read net2_large_scale
+
+echo 'Please enter net2 DNS server IPs in array format'
+read net2_dns_server
+
+echo 'Please enter external network for net2'
+read net2_external_network
+
+echo 'Please enter net2 internal gateway IP'
+read net2_gateway_internal_ip
+
+echo 'Please enter net2 NTP server IP addresses in array format'
+read net2_ntp_servers
+
+echo 'Please enter neustar password'
+read neustar_ultradns_password
+
+echo 'Please enter slack webhook for acme script'
+read slack_webhook_url_acme_sh
+
 echo 'Please provide the Red Hat registry URL'
 read registry_url
 
@@ -93,7 +126,7 @@ function setup_openstack_variables() {
     oc create -f openshift-yaml/openstack_params.yaml
 
     oc create secret generic openstack \
-        --from-literal=username=openshift@ukcloud.com \
+        --from-literal=username=$username \
         --from-literal=password=$password
 
     oc create secret generic rhelsubscriptions \
@@ -124,6 +157,16 @@ function setup_openstack_variables() {
         --from-literal=worker_small_scale=$worker_small_scale \
         --from-literal=worker_medium_scale=$worker_medium_scale \
         --from-literal=worker_large_scale=$worker_large_scale \
+        --from-literal=infra_scale=$infra_scale \
+        --from-literal=net2_worker_small_scale=$net2_small_scale \
+        --from-literal=net2_worker_medium_scale=$net2_medium_scale \
+        --from-literal=net2_worker_large_scale=$net2_large_scale \
+        --from-literal=net2_dns_server=$net2_dns_server \
+        --from-literal=net2_external_network=$net2_external_network \
+        --from-literal=net2_gateway_internal_ip=$net2_gateway_internal_ip \
+        --from-literal=net2_ntp_servers=$net2_ntp_servers \
+        --from-literal=neustar_ultradns_password=$neustar_ultradns_password \
+        --from-literal=slack_webhook_url_acme_sh=$slack_webhook_url_acme_sh \
         --from-literal=registry_url=$registry_url \
         --from-literal=registry_user=$registry_user \
         --from-literal=registry_password=$registry_password
