@@ -4,6 +4,14 @@ metadata:
   creationTimestamp: null
   name: openshift-build
 objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: openstack-config
+  data:
+    openstack_url: ${OPENSTACK_AUTH_URL}
+    openstack_project_id: ${OPENSTACK_PROJECT_ID}
+    openstack_project_name: ${OPENSTACK_PROJECT_NAME}
 - apiVersion: build.openshift.io/v1
   kind: BuildConfig
   metadata:
@@ -30,6 +38,19 @@ objects:
       type: GitHub
     - type: ConfigChange
 parameters:
+- description: The OpenStack auth URL of the target environment.
+  displayName: OpenStack auth URL
+  name: OPENSTACK_AUTH_URL
+  required: true
+  value: https://cor00005.cna.ukcloud.com/v3
+- description: The OpenStack project ID of target environment.
+  displayName: OpenStack project ID
+  name: OPENSTACK_PROJECT_ID
+  required: true
+- description: The OpenStack project name  of target environment.
+  displayName: OpenStack project name
+  name: OPENSTACK_PROJECT_NAME
+  required: true
 - description: The name assigned to the objects defined in this template.
   displayName: Name
   name: NAME

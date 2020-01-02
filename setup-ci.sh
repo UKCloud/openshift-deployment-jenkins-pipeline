@@ -108,6 +108,15 @@ read registry_user
 echo 'Please provide the Red Hat registry users password'
 read registry_password
 
+echo 'Please provide the auth URL for the openstack environment (v3)'
+read OPENSTACK_AUTH_URL
+
+echo 'Please provide the project ID for the openstack environment'
+read OPENSTACK_PROJECT_ID
+
+echo 'Please provide the name of the project for the openstack environment'
+read OPENSTACK_PROJECT_NAME
+
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
 SOURCE_REPOSITORY_REF='master'
@@ -119,12 +128,13 @@ function setup_openshift_deployment_jenkins_pipeline() {
         -p NAME=$NAME \
         -p SOURCE_REPOSITORY_URL=$SOURCE_REPOSITORY_URL \
         -p SOURCE_REPOSITORY_REF=$SOURCE_REPOSITORY_REF \
-        -p CONTEXT_DIR=$CONTEXT_DIR
+        -p CONTEXT_DIR=$CONTEXT_DIR \
+        -p OPENSTACK_AUTH_URL=$OPENSTACK_AUTH_URL \
+        -p OPENSTACK_PROJECT_ID=$OPENSTACK_PROJECT_ID \
+        -p OPENSTACK_PROJECT_NAME=$OPENSTACK_PROJECT_NAME
 }
 
 function setup_openstack_variables() {
-    oc create -f openshift-yaml/openstack_params.yaml
-
     oc create secret generic openstack \
         --from-literal=username=$username \
         --from-literal=password=$password
