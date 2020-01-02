@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo 'Please enter the username for the openstack CI user'
-read password
+read username
 
 echo 'Please enter the password for the openstack CI user'
 read password
