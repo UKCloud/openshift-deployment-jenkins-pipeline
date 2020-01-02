@@ -108,6 +108,9 @@ read registry_user
 echo 'Please provide the Red Hat registry users password'
 read registry_password
 
+echo 'Please provide deployment key'
+read deploy_key
+
 echo 'Please provide the auth URL for the openstack environment (v3)'
 read OPENSTACK_AUTH_URL
 
@@ -179,7 +182,8 @@ function setup_openstack_variables() {
         --from-literal=slack_webhook_url_acme_sh=$slack_webhook_url_acme_sh \
         --from-literal=registry_url=$registry_url \
         --from-literal=registry_user=$registry_user \
-        --from-literal=registry_password=$registry_password
+        --from-literal=registry_password=$registry_password \
+        --from-literal=deploy_key=$deploy_key
 
 }
 
