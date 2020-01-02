@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   name: openshift-build
 objects:
-- apiVersion: v1
+- apiVersion: build.openshift.io/v1
   kind: BuildConfig
   metadata:
     creationTimestamp: null
