@@ -175,6 +175,20 @@ node ('openstack-jenkins-slave') {
         }
 
 
+
+        stage('validate cluster cronjobs') {
+            sh("""
+                source ./openstack_rc.sh;
+
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/backup.yml";
+
+                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -v -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/docker-prune.yaml";
+                
+                if [ \"\$MULTINETWORK\" = true ]; then ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"; fi
+            """)
+        }
+
+
         /*
             Test user creation works (using a randomly-generated password)
         */
