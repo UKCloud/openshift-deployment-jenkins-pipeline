@@ -108,8 +108,11 @@ read registry_user
 echo 'Please provide the Red Hat registry users password'
 read registry_password
 
-echo 'Please provide deployment key'
-read deploy_key
+echo 'Please provide the openshift-deployment-ansible branch you would like to pull (e.g. v3.11)'
+read ansible_branch
+
+echo 'Please provide the ansible vault password to decrypt deploy key'
+read ansible_vault_password
 
 echo 'Please provide the auth URL for the openstack environment (v3)'
 read OPENSTACK_AUTH_URL
@@ -183,7 +186,8 @@ function setup_openstack_variables() {
         --from-literal=registry_url=$registry_url \
         --from-literal=registry_user=$registry_user \
         --from-literal=registry_password=$registry_password \
-        --from-literal=deploy_key=$deploy_key
+        --from-literal=ansible_branch=$ansible_branch \
+        --from-literal=ansible_vault_password=$ansible_vault_password
 
 }
 

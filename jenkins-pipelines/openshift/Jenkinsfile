@@ -1,7 +1,6 @@
 node ('openstack-jenkins-slave') {
     try {
         def openshiftHeatBranch = 'v3.11'
-        def openshiftDeploymentAnsibleBranch = 'v3.11'
 
         //slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
@@ -54,6 +53,8 @@ node ('openstack-jenkins-slave') {
             sh "echo export REG_URL=`oc get secrets openshift --template='{{ .data.registry_url }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_USER=`oc get secrets openshift --template='{{ .data.registry_user }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export REG_PASSWORD=`oc get secrets openshift --template='{{ .data.registry_password }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export VAULT_PASSWORD=`oc get secrets openshift --template='{{ .data.ansible_vault_password }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export ANSIBLE_BRANCH=`oc get secrets openshift --template='{{ .data.ansible_branch }}' | base64 --decode` | tee -a openstack_rc.sh"
         }
 
         stage('cleanup HEAT environment') {
@@ -106,7 +107,7 @@ node ('openstack-jenkins-slave') {
                 echo "    - gateway: "10.2.1.254""                    >> environment.yaml
                 echo "      route: "51.179.219.220/32""               >> environment.yaml                        
                 echo "  deploy_extra_gateway: \$DEPLOYEXTRAGATEWAY"   >> environment.yaml
-                echo "  ansible_branch: v3.11"                        >> environment.yaml
+                echo "  ansible_branch: \$ANSIBLE_BRANCH"             >> environment.yaml
                 echo "  slack_webhook_url_acme_sh: \$SLACK_WEBHOOK"   >> environment.yaml
                 echo "  neustar_ultradns_username: "openshift""       >> environment.yaml
                 echo "  neustar_ultradns_password: \$NEUSTAR_PASSWORD"  >> environment.yaml
@@ -121,7 +122,7 @@ node ('openstack-jenkins-slave') {
                 echo "    gateway: "10.2.1.254""                                          >> environment.yaml
                 echo "    bastion_ip: "10.2.1.101""                                       >> environment.yaml
                 echo "    service_subnet: "10.2.1.240/29""                                >> environment.yaml
-                oc get secrets openshift --template='{{ .data.deploy_key }}' | base64 --decode      >> deploy.pem
+                echo "  ansible_vault_password: \$VAULT_PASSWORD"                         >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
@@ -147,11 +148,8 @@ node ('openstack-jenkins-slave') {
                openshift-tooling is a private repo, we scp the deploy key
                and pull the code here
             */
-            sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins deploy.pem cloud-user@$bastionip:")
-            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 0600 deploy.pem ; eval \$(ssh-agent -s) ; ssh-add deploy.pem ; ssh-keyscan -t rsa github.com >> /home/cloud-user/.ssh/known_hosts ; git clone git@github.com:UKCloud/openshift-tooling.git'") 
             sh("scp -o StrictHostKeyChecking=no -i id_rsa_jenkins id_rsa_jenkins cloud-user@$bastionip:")
             sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'chmod 600 id_rsa_jenkins'")
-            sh("ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip 'cd /usr/share/ansible/openshift-deployment-ansible ; git branch ; git checkout $openshiftDeploymentAnsibleBranch'; git branch")
         }
 
         stage('deploy openshift') {
