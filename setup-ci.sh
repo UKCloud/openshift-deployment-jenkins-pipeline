@@ -1,6 +1,9 @@
 #!/bin/bash
 
-echo 'Please enter the password for the openstack CI user (openshift@ukcloud.com)'
+echo 'Please enter the username for the openstack CI user'
+read username
+
+echo 'Please enter the password for the openstack CI user'
 read password
 
 echo 'Please enter the s3accesskey'
@@ -66,6 +69,36 @@ read worker_medium_scale
 echo 'Please enter the quantity of large workers required'
 read worker_large_scale
 
+echo 'Please enter the quantity of infrastructure workers required'
+read infra_scale
+
+echo 'Please enter the quantity of net2 small workers required'
+read net2_small_scale
+
+echo 'Please enter the quantity of net2 medium workers required'
+read net2_medium_scale
+
+echo 'Please enter the quantity of net2 large workers required'
+read net2_large_scale
+
+echo 'Please enter net2 DNS server IPs in array format'
+read net2_dns_server
+
+echo 'Please enter external network for net2'
+read net2_external_network
+
+echo 'Please enter net2 internal gateway IP'
+read net2_gateway_internal_ip
+
+echo 'Please enter net2 NTP server IP addresses in array format'
+read net2_ntp_servers
+
+echo 'Please enter neustar password'
+read neustar_ultradns_password
+
+echo 'Please enter slack webhook for acme script'
+read slack_webhook_url_acme_sh
+
 echo 'Please provide the Red Hat registry URL'
 read registry_url
 
@@ -74,6 +107,21 @@ read registry_user
 
 echo 'Please provide the Red Hat registry users password'
 read registry_password
+
+echo 'Please provide the openshift-deployment-ansible branch you would like to pull (e.g. v3.11)'
+read ansible_branch
+
+echo 'Please provide the ansible vault password to decrypt deploy key'
+read ansible_vault_password
+
+echo 'Please provide the auth URL for the openstack environment (v3)'
+read OPENSTACK_AUTH_URL
+
+echo 'Please provide the project ID for the openstack environment'
+read OPENSTACK_PROJECT_ID
+
+echo 'Please provide the name of the project for the openstack environment'
+read OPENSTACK_PROJECT_NAME
 
 NAME='openshift-build-pipeline'
 SOURCE_REPOSITORY_URL='https://github.com/UKCloud/openshift-deployment-jenkins-pipeline.git'
@@ -86,14 +134,15 @@ function setup_openshift_deployment_jenkins_pipeline() {
         -p NAME=$NAME \
         -p SOURCE_REPOSITORY_URL=$SOURCE_REPOSITORY_URL \
         -p SOURCE_REPOSITORY_REF=$SOURCE_REPOSITORY_REF \
-        -p CONTEXT_DIR=$CONTEXT_DIR
+        -p CONTEXT_DIR=$CONTEXT_DIR \
+        -p OPENSTACK_AUTH_URL=$OPENSTACK_AUTH_URL \
+        -p OPENSTACK_PROJECT_ID=$OPENSTACK_PROJECT_ID \
+        -p OPENSTACK_PROJECT_NAME=$OPENSTACK_PROJECT_NAME
 }
 
 function setup_openstack_variables() {
-    oc create -f openshift-yaml/openstack_params.yaml
-
     oc create secret generic openstack \
-        --from-literal=username=openshift@ukcloud.com \
+        --from-literal=username=$username \
         --from-literal=password=$password
 
     oc create secret generic rhelsubscriptions \
@@ -124,9 +173,21 @@ function setup_openstack_variables() {
         --from-literal=worker_small_scale=$worker_small_scale \
         --from-literal=worker_medium_scale=$worker_medium_scale \
         --from-literal=worker_large_scale=$worker_large_scale \
+        --from-literal=infra_scale=$infra_scale \
+        --from-literal=net2_worker_small_scale=$net2_small_scale \
+        --from-literal=net2_worker_medium_scale=$net2_medium_scale \
+        --from-literal=net2_worker_large_scale=$net2_large_scale \
+        --from-literal=net2_dns_server=$net2_dns_server \
+        --from-literal=net2_external_network=$net2_external_network \
+        --from-literal=net2_gateway_internal_ip=$net2_gateway_internal_ip \
+        --from-literal=net2_ntp_servers=$net2_ntp_servers \
+        --from-literal=neustar_ultradns_password=$neustar_ultradns_password \
+        --from-literal=slack_webhook_url_acme_sh=$slack_webhook_url_acme_sh \
         --from-literal=registry_url=$registry_url \
         --from-literal=registry_user=$registry_user \
-        --from-literal=registry_password=$registry_password
+        --from-literal=registry_password=$registry_password \
+        --from-literal=ansible_branch=$ansible_branch \
+        --from-literal=ansible_vault_password=$ansible_vault_password
 
 }
 
