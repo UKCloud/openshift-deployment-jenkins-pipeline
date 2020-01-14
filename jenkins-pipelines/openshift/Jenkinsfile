@@ -171,23 +171,23 @@ node ('openstack-jenkins-slave') {
                 source ./openstack_rc.sh;
                 SSH_KEY=\$(echo \$(cat id_rsa_jenkins | base64 | tr -d '\n'))
                 ENV_VARS=\"env:
-                   - name: \'USERNAME\'
-                     value: \'\$OPENSHIFT_USERNAME\'
-                   - name: \'USERPASS\'
-                     value: \'\$OPENSHIFT_PASSWORD\'
-                   - name: \'ADMINUSER\'
-                     value: \'\$ADMIN_USERNAME\'
-                   - name: \'ADMINPASS\'
-                     value: \'\$ADMIN_PASSWORD\'
-                   - name: \'BASTIONIP\'
-                     value: \'$bastionip\'
-                   - name: \'DOMAINSUFFIX\'
-                     value: \'\$DOMAIN_SUFFIX\'
-                   - name: \'MULTINETWORK\'
-                     value: \'\$MULTINETWORK\'
-                   - name: \'SSHKEY\'
-                     value: \'\$SSH_KEY\'\"
-                curl -H \"Content-Type: application/yaml\" -d \"\$ENV_VARS\" -X \"POST\" \"\$WEBHOOK_URL\"
+                   - name: 'USERNAME'
+                     value: '\$OPENSHIFT_USERNAME'
+                   - name: 'USERPASS'
+                     value: '\$OPENSHIFT_PASSWORD'
+                   - name: 'ADMINUSER'
+                     value: '\$ADMIN_USERNAME'
+                   - name: 'ADMINPASS'
+                     value: '\$ADMIN_PASSWORD'
+                   - name: 'BASTIONIP'
+                     value: '$bastionip'
+                   - name: 'DOMAINSUFFIX'
+                     value: '\$DOMAIN_SUFFIX'
+                   - name: 'MULTINETWORK'
+                     value: '\$MULTINETWORK'
+                   - name: 'SSHKEY'
+                     value: '\$SSH_KEY'\"
+                curl -H "Content-Type: application/yaml" -d "\$ENV_VARS" -X "POST" \$WEBHOOK_URL
             """)
         }
 
