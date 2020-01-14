@@ -168,6 +168,7 @@ node ('openstack-jenkins-slave') {
                 SSHKEY needs to be base64 encoded for this step.
             */
             sh("""
+                source ./openstack_rc.sh;
                 SSH_KEY=\$(echo \$(cat id_rsa_jenkins | base64 | tr -d '\n'))
                 ENV_VARS=\"env:
                    - name: \'USERNAME\'
