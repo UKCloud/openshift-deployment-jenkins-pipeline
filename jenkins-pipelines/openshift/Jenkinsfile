@@ -199,6 +199,6 @@ node ('openstack-jenkins-slave') {
         throw e
     } finally {
         // Success or failure, always send notifications
-        slackSend color: '#7ea8c8', message: "[openshift-build-pipeline finished :thumbs_up_parrot: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.JOB_URL})"
+        slackSend color: '#7ea8c8', message: "[openshift-build-pipeline finished: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.JOB_URL})"
     }
 }
