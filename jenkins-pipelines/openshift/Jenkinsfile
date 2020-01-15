@@ -2,7 +2,7 @@ node ('openstack-jenkins-slave') {
     try {
         def openshiftHeatBranch = 'v3.11'
 
-        slackSend color: 'good', message: "[openshift-build-pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}](${env.JOB_URL})"
+        slackSend color: 'good', message: "[openshift-build-pipeline started: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.JOB_URL})"
 
         stage('code-checkout') {
             git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
