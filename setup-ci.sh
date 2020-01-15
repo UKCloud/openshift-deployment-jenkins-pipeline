@@ -192,9 +192,12 @@ function setup_openstack_variables() {
 }
 
 function configure_openshift_githooks() {
-    # TODO: Automate webhook creation and updates via the github API
     gitHook=$(oc describe bc ${NAME} | grep -A1 'Webhook GitHub' | grep URL | awk '{print $NF}')
-    echo "Add a github webhook for the following URL to trigger automated builds of the Jenkins pipeline, $gitHook"
+    read -p "Enter Github username: " githubUsername
+    read -ps "Enter Github personal access token: " accessToken
+    read -p "Enter repository owner and repository name (UKCloud/openshift-deployment-ansible): " ownerRepo
+    jsonPayload = '{"name": "JenkinsPipeline", "active": true, "events": ["pull_request"], "config": {"url": $gitHook, "content_type": "json", "insecure_ssl": "0"}}'
+    curl -u $githubUsername:$accessToken -H "Accept: application/vnd.github.v3+json" -d $jsonPayload -X "POST" "https://api.github.com/repos/$ownerRepo/hooks"
 }
 
 setup_openshift_deployment_jenkins_pipeline
