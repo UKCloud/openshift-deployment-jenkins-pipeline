@@ -114,6 +114,9 @@ read ansible_branch
 echo 'Please provide the ansible vault password to decrypt deploy key'
 read ansible_vault_password
 
+echo 'Please provide the webhook url for the openshift-test-pipeline'
+read webhook_url
+
 echo 'Please provide the auth URL for the openstack environment (v3)'
 read OPENSTACK_AUTH_URL
 
@@ -187,7 +190,8 @@ function setup_openstack_variables() {
         --from-literal=registry_user=$registry_user \
         --from-literal=registry_password=$registry_password \
         --from-literal=ansible_branch=$ansible_branch \
-        --from-literal=ansible_vault_password=$ansible_vault_password
+        --from-literal=ansible_vault_password=$ansible_vault_password \
+        --from-literal=webhook_url=$webhook_url
 
 }
 
