@@ -2,7 +2,7 @@ node ('openstack-jenkins-slave') {
     try {
         def openshiftHeatBranch = 'v3.11'
 
-        slackSend color: 'good', message: "[openshift-build-pipeline started: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.JOB_URL})"
+        slackSend color: 'good', message: "[openshift-build-pipeline started: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.BUILD_URL})"
 
         stage('code-checkout') {
             git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
@@ -195,10 +195,10 @@ node ('openstack-jenkins-slave') {
 
     } catch (e) {
         //If there was an exception thrown, the build failed
-        slackSend color: '#c2001f', message: "[openshift-build-pipeline failed :sad_parrot: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.JOB_URL})"
+        slackSend color: '#c2001f', message: "[openshift-build-pipeline failed :sad_parrot: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.BUILD_URL})"
         throw e
     } finally {
         // Success or failure, always send notifications
-        slackSend color: '#7ea8c8', message: "[openshift-build-pipeline finished: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER}](${env.JOB_URL})"
+        slackSend color: '#7ea8c8', message: "[openshift-build-pipeline finished: JOB_"
     }
 }
