@@ -55,6 +55,7 @@ node ('openstack-jenkins-slave') {
             sh "echo export REG_PASSWORD=`oc get secrets openshift --template='{{ .data.registry_password }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export VAULT_PASSWORD=`oc get secrets openshift --template='{{ .data.ansible_vault_password }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export ANSIBLE_BRANCH=`oc get secrets openshift --template='{{ .data.ansible_branch }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export GET_CERTS=`oc get secrets openshift --template='{{ .data.get_certificates }}' | base64 --decode` | tee -a openstack_rc.sh"
         }
 
         stage('cleanup HEAT environment') {
@@ -123,6 +124,8 @@ node ('openstack-jenkins-slave') {
                 echo "    bastion_ip: "10.2.1.101""                                       >> environment.yaml
                 echo "    service_subnet: "10.2.1.240/29""                                >> environment.yaml
                 echo "  ansible_vault_password: \$VAULT_PASSWORD"                         >> environment.yaml
+                echo "  get_certificates: \$GET_CERTS"                                    >> environment.yaml
+                echo "  staging_certs: true"                                              >> environment.yaml
             ''')
             sh('cat environment.yaml')
             sh('cat rhel_reg_creds.yaml')
