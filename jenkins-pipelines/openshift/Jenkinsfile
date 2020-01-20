@@ -62,7 +62,7 @@ node ('openstack-jenkins-slave') {
         }
         
         stage('cleanup volumes') {
-            sh 'source ./openstack_rc.sh ; openstack volume list -f value -c ID | xargs openstack volume delete'
+            sh 'source ./openstack_rc.sh ; volumes=$(openstack volume list -f value -c ID) ; if [[ ! -z "$volumes" ]] ; then echo $volumes | xargs openstack volume delete ; fi'
         } 
 
         stage('setup host keys') {
