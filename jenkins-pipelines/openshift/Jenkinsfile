@@ -61,6 +61,10 @@ node ('openstack-jenkins-slave') {
         stage('cleanup HEAT environment') {
             sh 'source ./openstack_rc.sh ; openstack stack show openshift-\$OS_PROJECT_NAME && openstack stack delete openshift-\$OS_PROJECT_NAME --wait --yes || echo stack not found'
         }
+        
+        stage('cleanup volumes') {
+            sh 'source ./openstack_rc.sh ; volumes=$(openstack volume list -f value -c ID) ; if [[ ! -z "$volumes" ]] ; then echo $volumes | xargs openstack volume delete ; fi'
+        } 
 
         stage('setup host keys') {
             sh 'source ./openstack_rc.sh ; openstack keypair delete jenkins ; openstack keypair create jenkins | tee -a id_rsa_jenkins'
