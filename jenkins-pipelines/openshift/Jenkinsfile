@@ -193,16 +193,17 @@ node ('openstack-jenkins-slave') {
 
         stage('Check Jenkins test-pipeline has finished') {
             sh("""
-                REQUEST=$(curl "https://jenkins-test-pipeline.\$DOMAIN_SUFFIX/job/test-pipeline/job/test-pipeline-openshift-test-pipeline/lastBuild/api/json?tree=result" | jq ".result")
-                while [ \$REQUEST -ne "SUCCESS" ]; do
-                    # Check that the build status isn't either FAILURE or ABORTED.
-                    ACCEPTABLE=(FAILURE ABORTED)
-                    if [[ \$ACCEPTABLE[@] =~ \$REQUEST ]]; then
+                VERSION=$(oc get bc/openshift-test-pipeline -n test-pipeline --template="{{.status.lastVersion}}")
+                PHASE=$(oc get build openshift-test-pipeline-\$VERSION -n test-pipeline --template="{{.status.phase}}")
+                while [ \$PHASE -ne "Complete" ]; do
+                    # Check that the build status isn't either Failed or Cancelled.
+                    ACCEPTABLE=(Failed Cancelled)
+                    if [[ \$ACCEPTABLE[@] =~ \$PHASE ]]; then
                         echo "Test-pipeline failed!" 1>&2
                         exit 1
                     fi
                     sleep 10
-                    \$REQUEST
+                    \$PHASE
                 done
             """)
         }
