@@ -197,9 +197,12 @@ node ('openstack-jenkins-slave') {
 
         stage('Check Jenkins test-pipeline has finished') {
             sh("""
-                VERSION=\$(oc get bc/openshift-test-pipeline --template="{{.status.lastVersion}}")
-                PHASE=\$(oc get build openshift-test-pipeline-\$VERSION --template="{{.status.phase}}")
-                while [ "\$PHASE" != "Complete" ]; do
+                getphase() {
+                    VERSION=\$(oc get bc/openshift-test-pipeline --template="{{.status.lastVersion}}")
+                    PHASE=\$(oc get build openshift-test-pipeline-\$VERSION --template="{{.status.phase}}")
+                }
+                getphase
+                while [ \$PHASE != "Complete" ]; do
                     # Check that the build status isn't either Failed or Cancelled.
                     ACCEPTABLE=(Failed Cancelled)
                     if [[ "\$ACCEPTABLE[@]" =~ "\$PHASE" ]]; then
@@ -207,7 +210,7 @@ node ('openstack-jenkins-slave') {
                         exit 1
                     fi
                     sleep 10
-                    \$PHASE
+                    getphase
                 done
             """)
         }
