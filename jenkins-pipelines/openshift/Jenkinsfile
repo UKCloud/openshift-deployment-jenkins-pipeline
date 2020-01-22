@@ -199,10 +199,10 @@ node ('openstack-jenkins-slave') {
             sh("""
                 VERSION=\$(oc get bc/openshift-test-pipeline --template="{{.status.lastVersion}}")
                 PHASE=\$(oc get build openshift-test-pipeline-\$VERSION --template="{{.status.phase}}")
-                while [ \$PHASE -ne "Complete" ]; do
+                while [ "\$PHASE" -ne "Complete" ]; do
                     # Check that the build status isn't either Failed or Cancelled.
                     ACCEPTABLE=(Failed Cancelled)
-                    if [[ \$ACCEPTABLE[@] =~ \$PHASE ]]; then
+                    if [[ "\$ACCEPTABLE[@]" =~ "\$PHASE" ]]; then
                         echo "Test-pipeline failed!" 1>&2
                         exit 1
                     fi
