@@ -1,6 +1,6 @@
 node ('openstack-jenkins-slave') {
     try {
-        def openshiftHeatBranch = 'v3.11'
+        def openshiftHeatBranch = 'staging_certs'
 
         slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
