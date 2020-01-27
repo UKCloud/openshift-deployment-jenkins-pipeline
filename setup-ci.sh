@@ -193,13 +193,28 @@ function setup_openstack_variables() {
 
 function configure_openshift_githooks() {
     gitHook=$(oc describe bc ${NAME} | grep -A1 'Webhook GitHub' | grep URL | awk '{print $NF}')
+    # Prompt the user for required information
     read -p "Enter Github username: " githubUsername
-    read -ps "Enter Github personal access token: " accessToken
+    read -s -p "Enter Github personal access token: " accessToken
     read -p "Enter repository owner and repository name (UKCloud/openshift-deployment-ansible): " ownerRepo
-    jsonPayload = '{"name": "JenkinsPipeline", "active": true, "events": ["pull_request"], "config": {"url": $gitHook, "content_type": "json", "insecure_ssl": "0"}}'
-    curl -u $githubUsername:$accessToken -H "Accept: application/vnd.github.v3+json" -d $jsonPayload -X "POST" "https://api.github.com/repos/$ownerRepo/hooks"
-}
+
+    # Make request to the Github V3 API to create the Github webhook
+    curl -u $githubUsername:$accessToken -X POST -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/$ownerRepo/hooks \
+        --data '{
+        "name": "web",
+        "active": true,
+        "events": [
+            "pull_request"
+        ],
+        "config": {
+            "url": "'"$gitHook"'",
+            "content_type": "json",
+            "insecure_ssl": "0"
+        }
+    }'
+    }
 
 setup_openshift_deployment_jenkins_pipeline
 setup_openstack_variables
 configure_openshift_githooks
+
