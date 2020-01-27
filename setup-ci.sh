@@ -217,4 +217,3 @@ function configure_openshift_githooks() {
 setup_openshift_deployment_jenkins_pipeline
 setup_openstack_variables
 configure_openshift_githooks
-
