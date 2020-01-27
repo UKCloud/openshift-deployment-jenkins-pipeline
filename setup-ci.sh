@@ -196,7 +196,7 @@ function configure_openshift_githooks() {
     # Prompt the user for required information
     read -p "Enter Github username: " githubUsername
     read -s -p "Enter Github personal access token: " accessToken
-    read -p "Enter repository owner and repository name (UKCloud/openshift-deployment-ansible): " ownerRepo
+    read -p "Enter organisation/user and repository name eg: UKCloud/openshift-deployment-ansible: " ownerRepo
 
     # Make request to the Github V3 API to create the Github webhook
     curl -u $githubUsername:$accessToken -X POST -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/$ownerRepo/hooks \
