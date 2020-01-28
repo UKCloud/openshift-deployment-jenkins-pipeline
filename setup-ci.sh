@@ -117,6 +117,9 @@ read ansible_vault_password
 echo 'Please provide the webhook url for the openshift-test-pipeline'
 read webhook_url
 
+echo 'Should the pipeline get TLS certificates? true/false?'
+read get_certificates
+
 echo 'Please provide the auth URL for the openstack environment (v3)'
 read OPENSTACK_AUTH_URL
 
@@ -191,7 +194,8 @@ function setup_openstack_variables() {
         --from-literal=registry_password=$registry_password \
         --from-literal=ansible_branch=$ansible_branch \
         --from-literal=ansible_vault_password=$ansible_vault_password \
-        --from-literal=webhook_url=$webhook_url
+        --from-literal=webhook_url=$webhook_url \
+        --from-literal=get_certificates=$get_certificates
 
 }
 
