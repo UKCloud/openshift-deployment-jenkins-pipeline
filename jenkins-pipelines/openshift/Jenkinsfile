@@ -2,7 +2,7 @@ node ('openstack-jenkins-slave') {
     try {
         def openshiftHeatBranch = 'v3.11'
 
-        slackSend color: 'good', message: "Pipeline build Started: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
+        slackSend color: 'good', message: "openshift-build-pipeline started: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER} - <${env.BUILD_URL}|Jenkins build URL>"
 
         stage('code-checkout') {
             git branch:"$openshiftHeatBranch", url:"https://github.com/UKCloud/openshift-heat.git"
@@ -55,6 +55,7 @@ node ('openstack-jenkins-slave') {
             sh "echo export REG_PASSWORD=`oc get secrets openshift --template='{{ .data.registry_password }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export VAULT_PASSWORD=`oc get secrets openshift --template='{{ .data.ansible_vault_password }}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export ANSIBLE_BRANCH=`oc get secrets openshift --template='{{ .data.ansible_branch }}' | base64 --decode` | tee -a openstack_rc.sh"
+            sh "echo export WEBHOOK_URL=`oc get secrets openshift --template='{{ .data.webhook_url}}' | base64 --decode` | tee -a openstack_rc.sh"
             sh "echo export GET_CERTS=`oc get secrets openshift --template='{{ .data.get_certificates }}' | base64 --decode` | tee -a openstack_rc.sh"
         }
 
@@ -128,6 +129,7 @@ node ('openstack-jenkins-slave') {
                 echo "    bastion_ip: "10.2.1.101""                                       >> environment.yaml
                 echo "    service_subnet: "10.2.1.240/29""                                >> environment.yaml
                 echo "  ansible_vault_password: \$VAULT_PASSWORD"                         >> environment.yaml
+                echo "  webhook_url: \$WEBHOOK_URL"                                       >> environment.yaml
                 echo "  get_certificates: \$GET_CERTS"                                    >> environment.yaml
                 echo "  staging_certs: true"                                              >> environment.yaml
             ''')
@@ -166,77 +168,64 @@ node ('openstack-jenkins-slave') {
             """)
         }
 
-        stage('validate openshift deployment') {
+        stage('Start openshift-test-pipeline') {
+            /*
+                Trigger pipeline build via webhook.
+                Provide environment variables.
+                SSHKEY needs to be base64 encoded for this step.
+            */
             sh("""
                 source ./openstack_rc.sh;
-
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tests/all.yml \
-                    --extra-vars OPENSHIFT_USERNAME=\"\$OPENSHIFT_USERNAME\" \
-                    --extra-vars OPENSHIFT_PASSWORD=\"\$OPENSHIFT_PASSWORD\" \
-                    --extra-vars ADMIN_USERNAME=\"\$ADMIN_USERNAME\" \
-                    --extra-vars ADMIN_PASSWORD=\"\$ADMIN_PASSWORD\" \
-                    --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\""
+                SSH_KEY=\$(echo \$(cat id_rsa_jenkins | base64 | tr -d '\n'))
+                ENV_VARS=\"env:
+                   - name: 'USERNAME'
+                     value: '\$OPENSHIFT_USERNAME'
+                   - name: 'USERPASS'
+                     value: '\$OPENSHIFT_PASSWORD'
+                   - name: 'ADMINUSER'
+                     value: '\$ADMIN_USERNAME'
+                   - name: 'ADMINPASS'
+                     value: '\$ADMIN_PASSWORD'
+                   - name: 'BASTIONIP'
+                     value: '$bastionip'
+                   - name: 'DOMAINSUFFIX'
+                     value: '\$DOMAIN_SUFFIX'
+                   - name: 'MULTINETWORK'
+                     value: '\$MULTINETWORK'
+                   - name: 'SSHKEY'
+                     value: '\$SSH_KEY'\"
+                curl -H "Content-Type: application/yaml" -d "\$ENV_VARS" -X "POST" \$WEBHOOK_URL
             """)
         }
 
-        /*
-            Load tests for cluster using Locust.
-        */
-        stage('openshift load testing') {
+        stage('Check Jenkins test-pipeline has finished') {
             sh("""
-                source ./openstack_rc.sh;
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                    "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /home/cloud-user/openshift-tooling/locust/locust_setup.yaml --extra-vars domainSuffix=\"\$DOMAIN_SUFFIX\""
+                getphase() {
+                    VERSION=\$(oc get bc/openshift-test-pipeline --template="{{.status.lastVersion}}")
+                    PHASE=\$(oc get build openshift-test-pipeline-\$VERSION --template="{{.status.phase}}")
+                }
+                getphase
+                while [ \$PHASE != "Complete" ]; do
+                    # Check that the build status isn't either Failed or Cancelled.
+                    ACCEPTABLE=(Failed Cancelled)
+                    if [[ "\$ACCEPTABLE[@]" =~ "\$PHASE" ]]; then
+                        echo "Test-pipeline failed!" 1>&2
+                        exit 1
+                    fi
+                    sleep 10
+                    getphase
+                done
             """)
         }
-
-
-
-        stage('validate cluster cronjobs') {
-            sh("""
-                source ./openstack_rc.sh;
-
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/backup.yml";
-
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -v -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/docker-prune.yaml";
-                
-                if [ \"\$MULTINETWORK\" = true ]; then ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip "ansible-playbook -i /usr/share/ansible/openshift-deployment-ansible/openshift-ansible-hosts /usr/share/ansible/openshift-deployment-ansible/tools/playbooks/squid-whitelist.yaml"; fi
-            """)
-        }
-
-
-        /*
-            Test user creation works (using a randomly-generated password)
-        */
-        stage('validate openshift user creation') {
-            sh("""
-                source ./openstack_rc.sh;
-                RANDOM_PASSWORD=\$(openssl rand -base64 20 | cut -d= -f1);
-
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                    "cd /usr/share/ansible/openshift-deployment-ansible/tools/ ; ./create-user.sh testUser \$RANDOM_PASSWORD"
-
-                ssh -o StrictHostKeyChecking=no -i id_rsa_jenkins cloud-user@$bastionip \
-                    "oc login https://ocp.\$DOMAIN_SUFFIX:8443 --insecure-skip-tls-verify=true -u testUser -p \$RANDOM_PASSWORD"
-            """)
-        }
-
 
         //slackSend color: 'good', message: "Pipeline build Completed Successfully: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
 
-       stage('Cleanup HEAT deployment on successful deployment') {
-            sh("""
-                source ./openstack_rc.sh;
-                openstack stack delete openshift-\$OS_PROJECT_NAME --wait --yes
-            """)
-        }
-
     } catch (e) {
         //If there was an exception thrown, the build failed
-        slackSend color: '#c2001f', message: "Pipeline failed :("
+        slackSend color: '#c2001f', message: "openshift-build-pipeline failed :sad_parrot: Job name: ${env.JOB_NAME} Build number: ${env.BUILD_NUMBER} - <${env.BUILD_URL}|Jenkins build URL>"
         throw e
     } finally {
         // Success or failure, always send notifications
-        slackSend color: '#7ea8c8', message: "Pipeline finished"
+        slackSend color: '#7ea8c8', message: "openshift-build-pipeline finished: - <${env.BUILD_URL}|Jenkins build URL>"
     }
 }
